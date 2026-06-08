@@ -1,6 +1,32 @@
 # Changelog
 ---
 
+## [1.3.0]
+
+### Added
+- **Entity LOD (Level of Detail)** – distant entities are render-throttled to reduce GPU load without culling them entirely
+  - Medium LOD (>32 b on Balanced): entity renders every 2nd tick
+  - Far LOD (>64 b on Balanced): entity renders every 3rd tick
+  - XOR-based distribution ensures throttling is staggered across entities (no mass-freeze on a single tick)
+  - Configurable distances per profile; toggle in the in-game config screen
+- **Nameplate Culling** – entity name tags are hidden beyond a configurable distance (default 32 b on Balanced)
+  - Applies to all entities, including players, mobs, and armor stands
+  - Toggle in the in-game config screen
+- **Map Item Frame Throttle** – item frames displaying maps update their render state only every N ticks instead of every frame
+  - Default: every 3–5 ticks depending on profile (every frame on Quality)
+  - Initial render always runs; throttle kicks in after the first map texture is loaded
+  - Toggle in the in-game config screen
+- **HUD dirty-flag feedback loop** – the HUD throttle now force-enables itself for one tick whenever a player stat actually changes (health, food, armor, XP, air)
+  - Previously the throttle ran purely on tick parity; now it always catches real changes immediately
+  - Net effect: no more delayed health/hunger display when hit or eating
+
+### Changed
+- Performance profiles updated with values for all three new features
+- Quality profile: Entity LOD enabled with generous distances; Nameplate Culling and Map Frame Throttle disabled
+- Balanced/Performance/Ultra Performance: all three features enabled with progressively tighter settings
+
+---
+
 ## [1.2.0]
 
 ### Added

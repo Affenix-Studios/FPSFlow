@@ -17,6 +17,28 @@ The single biggest FPS win in entity-heavy scenes.
 - **Distance culling** — a configurable maximum render distance cuts entities beyond that range entirely
 - **Per-entity-type overrides** — configure specific entity types to always or never be culled (e.g. exempt armor stands)
 
+### Entity LOD *(new in 1.3.0)*
+Entities that are too far away to matter still get submitted to the renderer every frame. Entity LOD fixes this:
+
+- **Medium LOD** (>32 blocks on Balanced): entity renders every 2nd tick instead of every frame
+- **Far LOD** (>64 blocks on Balanced): entity renders every 3rd tick
+- XOR-based distribution staggers throttling across entities, so the skip isn't synchronized across the entire scene
+- Fully profile-aware — distances adjust automatically; toggle in the config screen
+
+### Nameplate Culling *(new in 1.3.0)*
+Name tags float above every entity, even ones you can barely see. Nameplate Culling hides them beyond a configurable distance:
+
+- Works for players, mobs, armor stands — any entity with a rendered label
+- Default: 32 blocks on Balanced (adjusts with each profile)
+- Toggle in the config screen
+
+### Map Item Frame Throttle *(new in 1.3.0)*
+Maps in item frames re-evaluate their render state every single frame — even when nothing on the map has changed.
+
+- Throttles render state updates to every 3–5 ticks (profile-dependent)
+- First render always runs in full; throttle activates after the initial map texture is loaded
+- Only affects item frames with maps; empty frames are unaffected
+
 ### Block Entity Culling *(new in 1.1.0)*
 Chests, furnaces, signs, banners, item frames, and armor stands are common sources of unexpected draw calls.
 
@@ -34,7 +56,7 @@ Uncontrolled particle explosions can tank FPS instantly.
 The HUD renders every single frame. Small savings compound fast.
 
 - **Hotbar slot hashing** — unchanged slots skip redundant processing
-- **HUD update throttling** — non-critical stat elements (health, food, XP, armor) are gated to every other tick
+- **HUD update throttling** — non-critical stat elements are gated to every other tick; forces an immediate update when health, food, XP, or armor actually changes *(improved in 1.3.0)*
 - **ImmediatelyFast awareness** — FPSFlow's HUD layer steps aside completely when ImmediatelyFast is installed
 
 ### World Join Optimizer *(new in 1.2.0)*
@@ -55,12 +77,12 @@ Install [ModMenu](https://modrinth.com/mod/modmenu) to get a settings button dir
 
 One setting, four presets. Changing the profile rewrites all other settings automatically.
 
-| Profile | Entity Occlusion | Entity Dist. | BE Dist. | Particle Cap | Particle Dist. | HUD Throttle |
+| Profile | Entity Dist. | BE Dist. | LOD (med/far) | Nameplate | Map Throttle | Particle Cap |
 |---------|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Quality** | ✗ | 128 b | Off | Off | 128 b | ✗ |
-| **Balanced** *(default)* | ✓ | 64 b | 64 b | 4 096 | 64 b | ✓ |
-| **Performance** | ✓ | 48 b | 48 b | 1 024 | 32 b | ✓ |
-| **Ultra Performance** | ✓ | 32 b | 32 b | 256 | 16 b | ✓ |
+| **Quality** | 128 b | Off | 48/96 b | Off | Off | Off |
+| **Balanced** *(default)* | 64 b | 64 b | 32/64 b | 32 b | /3 t | 4 096 |
+| **Performance** | 48 b | 48 b | 24/48 b | 24 b | /4 t | 1 024 |
+| **Ultra Performance** | 32 b | 32 b | 16/32 b | 16 b | /5 t | 256 |
 
 > Set `"profile": null` in the config to use fully custom values.
 
@@ -161,7 +183,7 @@ No — Fabric only.
 
 ## ✦ Source & License
 
-[**GitHub — fpsflow/fpsflow**](https://github.com/fpsflow/fpsflow)
+[**GitHub — fpsflow/fpsflow**](https://github.com/McAffe13/FPSFlow)
 
 Licensed under the **Mozilla Public License 2.0**.
 You are free to use, modify, and redistribute FPSFlow. Modifications to covered files must remain MPL-2.0.

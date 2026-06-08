@@ -3,6 +3,7 @@ package dev.fpsflow.optimization;
 import dev.fpsflow.FPSFlow;
 import dev.fpsflow.blockentity.BlockEntityCullingManager;
 import dev.fpsflow.entities.EntityCullingManager;
+import dev.fpsflow.entities.EntityLODManager;
 import dev.fpsflow.gui.GUIOptimizer;
 import dev.fpsflow.join.WorldJoinOptimizer;
 import dev.fpsflow.particles.ParticleOptimizer;
@@ -29,6 +30,7 @@ public final class OptimizationManager {
 
         register(WorldJoinOptimizer.getInstance());
         register(EntityCullingManager.getInstance());
+        register(EntityLODManager.getInstance());
         register(BlockEntityCullingManager.getInstance());
         register(ParticleOptimizer.getInstance());
         register(GUIOptimizer.getInstance());

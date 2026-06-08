@@ -65,17 +65,22 @@ public abstract class InGameHudMixin {
 
         HUDCache cache = HUDCache.getInstance();
 
-        cache.isHealthDirty(
-                (int) player.getHealth(),
-                (int) player.getMaxHealth(),
-                player.getAbsorptionAmount()
-        );
-        cache.isFoodDirty(
-                player.getHungerManager().getFoodLevel(),
-                player.getHungerManager().getSaturationLevel()
-        );
-        cache.isArmorDirty(player.getArmor());
-        cache.isXpDirty(player.experienceProgress, player.experienceLevel);
-        cache.isAirDirty(player.getAir());
+        // Use | (not ||) so all checks run and update the cached values every frame.
+        // If anything changed, tell GUIOptimizer so it forces an update next tick.
+        boolean anyDirty =
+                cache.isHealthDirty(
+                        (int) player.getHealth(),
+                        (int) player.getMaxHealth(),
+                        player.getAbsorptionAmount())
+                | cache.isFoodDirty(
+                        player.getHungerManager().getFoodLevel(),
+                        player.getHungerManager().getSaturationLevel())
+                | cache.isArmorDirty(player.getArmor())
+                | cache.isXpDirty(player.experienceProgress, player.experienceLevel)
+                | cache.isAirDirty(player.getAir());
+
+        if (anyDirty) {
+            GUIOptimizer.getInstance().reportDirty();
+        }
     }
 }

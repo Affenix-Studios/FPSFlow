@@ -18,6 +18,20 @@
 - **Distance culling** – configurable maximum render distance per entity
 - **Per-entity-type overrides** – exempt specific entity types from culling via config
 
+### Entity LOD *(new in 1.3.0)*
+- **Medium LOD** – entities beyond the configured medium distance render every 2nd tick
+- **Far LOD** – entities beyond the far distance render every 3rd tick
+- XOR-based distribution staggers throttling across entities to avoid synchronized "freeze frames"
+- Fully profile-aware; toggle in-game
+
+### Nameplate Culling *(new in 1.3.0)*
+- Entity name tags beyond a configurable distance are hidden entirely
+- Works for players, mobs, armor stands — anything with a rendered label
+
+### Map Item Frame Throttle *(new in 1.3.0)*
+- Item frames holding maps update their render state every N ticks instead of every frame
+- First render always runs in full; throttle activates after initial map texture load
+
 ### Block Entity Culling
 - **Distance culling** – chests, furnaces, signs, banners, item frames, and armor stands beyond the configured distance are not rendered
 - Fully configurable max distance, adjusts with each performance profile
@@ -29,7 +43,7 @@
 
 ### GUI & HUD Optimization
 - **Hotbar slot caching** – dirty-flag tracking per slot avoids redundant icon processing
-- **HUD update throttling** – non-critical stat updates (health, food, XP, armor) are gated to every-other-tick
+- **HUD update throttling** – non-critical stat updates are gated to every-other-tick; forces immediate update when stats actually change *(improved in 1.3.0)*
 - **ImmediatelyFast awareness** – HUD caching is automatically disabled when ImmediatelyFast is present
 
 ### Adaptive Rendering
@@ -62,12 +76,12 @@ Automatically detects and gracefully co-exists with:
 
 ## Performance Profiles
 
-| Profile | Entity Culling | Occlusion | BE Culling | Particles | HUD Throttling |
+| Profile | Entity Culling | BE Culling | Entity LOD (med/far) | Nameplate | Map Throttle |
 |---------|:---:|:---:|:---:|:---:|:---:|
-| Quality | ✓ | ✗ | ✗ | ✗ | ✗ |
-| Balanced | ✓ (64 b) | ✓ | ✓ (64 b) | ✓ 4096 | ✓ |
-| Performance | ✓ (48 b) | ✓ | ✓ (48 b) | ✓ 1024 | ✓ |
-| Ultra Performance | ✓ (32 b) | ✓ | ✓ (32 b) | ✓ 256 | ✓ |
+| Quality | ✓ (128 b) | ✗ | ✓ (48/96 b) | ✗ | ✗ |
+| Balanced | ✓ (64 b) | ✓ (64 b) | ✓ (32/64 b) | ✓ 32 b | ✓ /3 t |
+| Performance | ✓ (48 b) | ✓ (48 b) | ✓ (24/48 b) | ✓ 24 b | ✓ /4 t |
+| Ultra Performance | ✓ (32 b) | ✓ (32 b) | ✓ (16/32 b) | ✓ 16 b | ✓ /5 t |
 
 ---
 

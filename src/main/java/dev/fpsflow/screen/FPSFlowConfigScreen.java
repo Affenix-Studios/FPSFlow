@@ -74,6 +74,21 @@ public class FPSFlowConfigScreen extends Screen {
         addDrawableChild(toggleBtn(rx, y, "Join Optimizer",
                 () -> cfg.worldJoinOptimizer.enabled,
                 v -> cfg.worldJoinOptimizer.enabled = v));
+        y += SPACING;
+
+        // Row 5
+        addDrawableChild(toggleBtn(lx, y, "Entity LOD",
+                () -> cfg.entityLOD.enabled,
+                v -> cfg.entityLOD.enabled = v));
+        addDrawableChild(toggleBtn(rx, y, "Nameplate Culling",
+                () -> cfg.nameplateCulling.enabled,
+                v -> cfg.nameplateCulling.enabled = v));
+        y += SPACING;
+
+        // Row 6
+        addDrawableChild(toggleBtn(lx, y, "Map Frame Throttle",
+                () -> cfg.itemFrame.enabled,
+                v -> cfg.itemFrame.enabled = v));
 
         // Done
         addDrawableChild(ButtonWidget.builder(Text.literal("Done"), btn -> close())

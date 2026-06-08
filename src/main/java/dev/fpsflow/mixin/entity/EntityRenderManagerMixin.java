@@ -1,6 +1,7 @@
 package dev.fpsflow.mixin.entity;
 
 import dev.fpsflow.entities.EntityCullingManager;
+import dev.fpsflow.entities.EntityLODManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
@@ -31,6 +32,14 @@ public abstract class EntityRenderManagerMixin {
         if (camera == null) return;
 
         if (EntityCullingManager.getInstance().shouldCullEntity(entity, camera)) {
+            cir.setReturnValue(false);
+            return;
+        }
+
+        double dx = entity.getX() - cameraX;
+        double dy = entity.getY() - cameraY;
+        double dz = entity.getZ() - cameraZ;
+        if (EntityLODManager.getInstance().shouldThrottleRender(entity.getId(), dx * dx + dy * dy + dz * dz)) {
             cir.setReturnValue(false);
         }
     }

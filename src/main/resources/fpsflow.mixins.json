@@ -4,6 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "entity.EntityRenderManagerMixin",
+    "entity.EntityLabelMixin",
+    "entity.ItemFrameEntityRendererMixin",
     "blockentity.BlockEntityRenderManagerMixin",
     "particle.ParticleManagerMixin",
     "gui.InGameHudMixin"

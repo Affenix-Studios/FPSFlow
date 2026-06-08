@@ -60,6 +60,26 @@
   "fpsflow.config.update_checker.enabled": "Enable Update Checker",
   "fpsflow.config.update_checker.enabled.tooltip": "Check Modrinth for new FPSFlow versions on startup.",
 
+  "fpsflow.config.entity_lod": "Entity LOD",
+  "fpsflow.config.entity_lod.enabled": "Enable Entity LOD",
+  "fpsflow.config.entity_lod.enabled.tooltip": "Throttle rendering of distant entities to every 2nd or 3rd tick to save GPU time.",
+  "fpsflow.config.entity_lod.medium_distance": "Medium LOD Distance",
+  "fpsflow.config.entity_lod.medium_distance.tooltip": "Entities beyond this distance (blocks) render every 2nd tick.",
+  "fpsflow.config.entity_lod.far_distance": "Far LOD Distance",
+  "fpsflow.config.entity_lod.far_distance.tooltip": "Entities beyond this distance (blocks) render every 3rd tick.",
+
+  "fpsflow.config.nameplate_culling": "Nameplate Culling",
+  "fpsflow.config.nameplate_culling.enabled": "Enable Nameplate Culling",
+  "fpsflow.config.nameplate_culling.enabled.tooltip": "Hide entity name tags beyond the configured distance.",
+  "fpsflow.config.nameplate_culling.max_distance": "Maximum Nameplate Distance",
+  "fpsflow.config.nameplate_culling.max_distance.tooltip": "Nameplates beyond this distance (blocks) are not rendered.",
+
+  "fpsflow.config.item_frame": "Map Frame Throttle",
+  "fpsflow.config.item_frame.enabled": "Enable Map Frame Throttle",
+  "fpsflow.config.item_frame.enabled.tooltip": "Limit how often item frames with maps update their render state.",
+  "fpsflow.config.item_frame.interval": "Map Update Interval (ticks)",
+  "fpsflow.config.item_frame.interval.tooltip": "Map item frames refresh their texture once every N ticks. Higher = better performance.",
+
   "fpsflow.update.available": "A new version of FPSFlow is available: %s → %s (check Modrinth)",
 
   "fpsflow.compat.entity_culling_detected": "EntityCulling mod detected – FPSFlow entity culling disabled to avoid conflicts.",
