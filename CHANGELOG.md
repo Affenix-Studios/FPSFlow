@@ -1,6 +1,21 @@
 # Changelog
 ---
 
+## [1.3.1]
+
+### Fixed
+- **Nameplate flicker at distance** – name tags no longer rapidly blink on/off when an entity hovers near the culling threshold
+  - Visibility decisions are now cached per entity and re-evaluated only every N ticks (`checkIntervalTicks`, default 5)
+  - A 15 % hysteresis dead-band is applied around `maxDistance`: a visible tag only disappears when the entity moves clearly *beyond* the threshold, and a hidden tag only reappears when the entity moves clearly *inside* it
+  - Combined effect: smooth transitions with no per-frame toggling
+
+### Changed
+- `nameplateCulling` config section gains a new field `checkIntervalTicks` (default `5`)
+  - Balanced: 6 ticks, Performance: 4 ticks, Ultra Performance: 3 ticks
+  - Existing configs without this field default to 5 ticks automatically
+
+---
+
 ## [1.3.0]
 
 ### Added
