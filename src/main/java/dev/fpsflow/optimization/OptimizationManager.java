@@ -8,6 +8,7 @@ import dev.fpsflow.gui.GUIOptimizer;
 import dev.fpsflow.join.WorldJoinOptimizer;
 import dev.fpsflow.particles.ParticleOptimizer;
 import dev.fpsflow.rendering.AdaptiveRenderer;
+import dev.fpsflow.rendering.BackgroundFpsLimiter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public final class OptimizationManager {
         register(ParticleOptimizer.getInstance());
         register(GUIOptimizer.getInstance());
         register(AdaptiveRenderer.getInstance());
+        register(BackgroundFpsLimiter.getInstance());
 
         for (OptimizationModule module : modules) {
             try {

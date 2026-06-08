@@ -1,6 +1,27 @@
 # Changelog
 ---
 
+## [1.6.0]
+
+### Fixed
+- **NPC nameplate flickering** — Entities whose nameplate visibility has been set to always-on by the server (`isCustomNameVisible = true`, typical for plugin NPC systems) are now exempted from distance culling entirely. Previously the mod fought against the server metadata update on every view-distance change, causing persistent flickering.
+- **Hysteresis reset every 200 ticks removed** — The periodic full cache wipe in `NameplateCullingManager` was resetting the hysteresis dead-band, causing a brief nameplate flicker roughly every 10 seconds for entities near the culling threshold. `WeakHashMap` garbage-collects despawned entity entries automatically, so the manual wipe was never needed.
+
+### Added
+- **Background FPS limiter** — When the Minecraft window loses focus the frame rate is capped at a configurable limit (default: 60 FPS unfocused, 30 FPS minimised) via a post-frame sleep on the render thread. Inspired by Dynamic FPS. Caps are profile-aware: Quality 30/10, Balanced 60/30, Performance 10/3, Ultra Performance 5/2. Toggle via `backgroundFps.enabled` in the config.
+- **Painting back-face culling** — Paintings are never visible from behind, so the renderer now skips them entirely when the camera is on the back side. Uses a dot-product normal check against the painting's facing direction. Controlled by `entityCulling.paintingBackfaceCulling` (default: `true`).
+- **Tiered particle density LOD** — Instead of a hard allow/block cutoff there are now three distance zones: near (< `midDistance`): 100 % of particles; mid (`midDistance` → `maxDistance`): ~50 % via a stable position-based hash — no per-tick flickering; far (> `maxDistance`): 0 %. The new `midDistance` value is configurable in all four built-in profiles and custom profiles.
+- **FPS-adaptive LOD tightening** — When the adaptive renderer detects low FPS (< 30 FPS: 0.7× multiplier, < 15 FPS: 0.5×), entity LOD distance thresholds shrink automatically. At 20 FPS the Balanced thresholds (40/80 blocks) behave like 28/56 blocks without requiring a manual profile switch.
+
+---
+
+## [1.5.2]
+
+### Fixed
+- **Game crash from stale entity reference in particles** — During rapid world/minigame transitions, `NO_RENDER` particles could crash with a `NullPointerException` (`$$10 is null`) when the entity they referenced was removed before their first tick. FPSFlow now catches this in `ParticleManager.tick()`, preventing the crash and logging a rate-limited warning (at most once every 5 seconds).
+
+---
+
 ## [1.5.1]
 
 ### Fixed

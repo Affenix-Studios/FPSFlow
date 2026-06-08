@@ -70,7 +70,10 @@ public final class ParticleOptimizer implements OptimizationModule {
 
     /**
      * Like {@link #shouldBlockParticle} but applies an additional distance multiplier.
-     * Used by the adaptive renderer to tighten the radius when FPS is critically low.
+     * Uses three density zones:
+     *   near  (< midDistance)  → 100 % of particles allowed
+     *   mid   (midDistance … maxDistance) → ~50 % allowed (position-hash thinning)
+     *   far   (> maxDistance)  → 0 % (hard block)
      */
     public boolean shouldBlockParticleWithMultiplier(double x, double y, double z, double distMultiplier) {
         if (!isEnabled()) return false;
@@ -87,8 +90,21 @@ public final class ParticleOptimizer implements OptimizationModule {
         if (mc.player == null) return false;
 
         double distSq = mc.player.squaredDistanceTo(x, y, z);
-        double maxDist = cfg.maxDistance * distMultiplier * joinFraction;
-        return distSq > maxDist * maxDist;
+        double scale = distMultiplier * joinFraction;
+        double maxDist = cfg.maxDistance * scale;
+        if (distSq > maxDist * maxDist) return true;
+
+        // Mid zone: thin to ~50 % using a stable position-based hash so the
+        // reduction looks spatially uniform rather than flickering per tick.
+        double midDist = Math.min(cfg.midDistance * scale, maxDist * 0.95);
+        if (distSq > midDist * midDist) {
+            int xi = (int) Math.floor(x);
+            int zi = (int) Math.floor(z);
+            int hash = xi * 374761393 ^ zi * 668265263;
+            return (hash & 1) == 0;
+        }
+
+        return false;
     }
 
     /** Called from the mixin each time a particle is about to be added (and not blocked). */

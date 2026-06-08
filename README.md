@@ -22,11 +22,13 @@
 - **Medium LOD** – entities beyond the configured medium distance render every 2nd tick
 - **Far LOD** – entities beyond the far distance render every 3rd tick
 - XOR-based distribution staggers throttling across entities to avoid synchronized "freeze frames"
+- **FPS-adaptive tightening** *(new in 1.6.0)* – when FPS drops below 30/15, LOD thresholds shrink automatically (0.7×/0.5×) without requiring a manual profile change
 - Fully profile-aware; toggle in-game
 
 ### Nameplate Culling *(new in 1.3.0)*
 - Entity name tags beyond a configurable distance are hidden entirely
 - Works for players, mobs, armor stands — anything with a rendered label
+- **Server NPC awareness** *(new in 1.6.0)* – entities whose nametag is set to always-visible by the server (`isCustomNameVisible`) are never culled, preventing the flickering that occurred when plugin NPCs fought the mod's distance check
 
 ### Map Item Frame Throttle *(new in 1.3.0)*
 - Item frames holding maps update their render state every N ticks instead of every frame
@@ -38,13 +40,25 @@
 
 ### Particle Optimization
 - **Count cap** – no new particles spawn once the configured limit is reached
-- **Distance limit** – particles beyond a configurable radius from the player are discarded before they are allocated
+- **Tiered density LOD** *(new in 1.6.0)* – three distance zones: near (< `midDistance`): 100 %; mid zone: ~50 % via stable position hash; beyond `maxDistance`: 0 %. Smoother visual falloff instead of a hard cutoff
 - **Adaptive reduction** – when FPS drops, the effective spawn radius shrinks automatically
 
 ### GUI & HUD Optimization
 - **Hotbar slot caching** – dirty-flag tracking per slot avoids redundant icon processing
 - **HUD update throttling** – non-critical stat updates are gated to every-other-tick; forces immediate update when stats actually change *(improved in 1.3.0)*
 - **ImmediatelyFast awareness** – HUD caching is automatically disabled when ImmediatelyFast is present
+
+### Background FPS Limiter *(new in 1.6.0)*
+- Caps the frame rate when the Minecraft window is unfocused or minimised — stops the GPU from spinning at full speed for no one
+- Configurable FPS targets per state: unfocused (default 60 FPS) and minimised (default 30 FPS)
+- Implemented as a post-frame sleep on the render thread; MC's tick catch-up logic handles any missed ticks normally
+- Caps adjust with each performance profile (Quality: 30/10, Balanced: 60/30, Performance: 10/3, Ultra Performance: 5/2)
+- Toggle via `backgroundFps.enabled`; inspired by [Dynamic FPS](https://modrinth.com/mod/dynamic-fps)
+
+### Painting Back-Face Culling *(new in 1.6.0)*
+- Skips rendering paintings when the camera is on their back side — the back face is never visible anyway
+- Uses a dot-product check against the painting's facing normal; zero CPU overhead per-frame when the painting is in front
+- Toggle via `entityCulling.paintingBackfaceCulling` (default: `true`)
 
 ### Adaptive Rendering
 - **Smoothed FPS monitoring** – exponential moving average keeps FPS estimates stable
@@ -76,14 +90,12 @@ Automatically detects and gracefully co-exists with:
 
 ## Performance Profiles
 
-| Profile | Entity Culling | BE Culling | Entity LOD (med/far) | Nameplate | Map Throttle |
-|---------|:---:|:---:|:---:|:---:|:---:|
-| Quality | ✓ (128 b) | ✗ | ✓ (48/96 b) | ✗ | ✗ |
-| Balanced | ✓ (64 b) | ✓ (64 b) | ✓ (40/80 b) | ✓ 32 b | ✓ /3 t |
-| Performance | ✓ (48 b) | ✓ (48 b) | ✓ (40/80 b)* | ✓ 24 b | ✓ /4 t |
-| Ultra Performance | ✓ (32 b) | ✓ (32 b) | ✓ (16/32 b) | ✓ 16 b | ✓ /5 t |
-
-*Default Balanced Medium/Far distances were widened in 1.5.1 for better visibility and smoother distant entity behavior.
+| Profile | Entity Culling | BE Culling | LOD (med/far) | Nameplate | Particle (mid/max) | Map Throttle | BG FPS (unfocused/min) |
+|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Quality | ✓ (128 b) | ✗ | ✓ (48/96 b) | ✗ | Off | ✗ | 30/10 |
+| Balanced | ✓ (64 b) | ✓ (64 b) | ✓ (40/80 b) | ✓ 32 b | 32/64 b | ✓ /3 t | 60/30 |
+| Performance | ✓ (48 b) | ✓ (48 b) | ✓ (24/48 b) | ✓ 24 b | 16/32 b | ✓ /4 t | 10/3 |
+| Ultra Performance | ✓ (32 b) | ✓ (32 b) | ✓ (16/32 b) | ✓ 16 b | 8/16 b | ✓ /5 t | 5/2 |
 
 ---
 
@@ -113,12 +125,18 @@ Config file: `.minecraft/config/fpsflow.json`
 {
   "profile": "BALANCED",
   "updateChecker": { "enabled": true },
+  "backgroundFps": {
+    "enabled": true,
+    "unfocusedFpsCap": 60,
+    "minimizedFpsCap": 30
+  },
   "entityCulling": {
     "enabled": true,
     "occlusionCulling": true,
     "asyncOcclusion": true,
     "maxDistance": 64,
     "cacheUpdateIntervalTicks": 10,
+    "paintingBackfaceCulling": true,
     "entityTypeOverrides": {}
   },
   "blockEntityCulling": {
@@ -128,6 +146,7 @@ Config file: `.minecraft/config/fpsflow.json`
   "particleOptimization": {
     "enabled": true,
     "maxParticles": 4096,
+    "midDistance": 32,
     "maxDistance": 64
   },
   "guiOptimization": {

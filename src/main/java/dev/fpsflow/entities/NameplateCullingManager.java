@@ -58,13 +58,9 @@ public final class NameplateCullingManager implements OptimizationModule {
 
     @Override
     public void onTick() {
-        // Cleanup old entries periodically
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world != null && client.world.getTime() % 200 == 0) {
-            VISIBILITY_CACHE.clear();
-            LAST_CHECK_TICK.clear();
-            // Don't clear SERVER_FORCED_VISIBILITY, it uses WeakHashMap
-        }
+        // WeakHashMap clears entries automatically when the entity is GC'd (i.e. removed from
+        // the world). A periodic hard-clear is not needed and would reset hysteresis state,
+        // causing a visible flicker on every 200th tick.
     }
 
     /**
@@ -73,6 +69,13 @@ public final class NameplateCullingManager implements OptimizationModule {
      */
     public boolean shouldShowNameplate(Entity entity, double squaredDistanceToCam) {
         if (!isEnabled()) return true;
+
+        // Entities with a server-set persistent nametag (isCustomNameVisible == true on
+        // non-players) must never be culled: the server explicitly declared them always-visible.
+        // Culling them races against server metadata updates and is what causes the flickering.
+        if (!(entity instanceof PlayerEntity) && entity.isCustomNameVisible()) {
+            return true;
+        }
 
         MinecraftClient client = MinecraftClient.getInstance();
         long currentTick = (client.world != null) ? client.world.getTime() : 0L;

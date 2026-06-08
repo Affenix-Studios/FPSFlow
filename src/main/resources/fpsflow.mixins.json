@@ -8,7 +8,8 @@
     "entity.ItemFrameEntityRendererMixin",
     "blockentity.BlockEntityRenderManagerMixin",
     "particle.ParticleManagerMixin",
-    "gui.InGameHudMixin"
+    "gui.InGameHudMixin",
+    "render.GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

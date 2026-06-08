@@ -4,6 +4,7 @@ import dev.fpsflow.FPSFlow;
 import dev.fpsflow.config.ConfigManager;
 import dev.fpsflow.config.FPSFlowConfig;
 import dev.fpsflow.optimization.OptimizationModule;
+import dev.fpsflow.rendering.AdaptiveRenderer;
 
 public final class EntityLODManager implements OptimizationModule {
 
@@ -52,8 +53,11 @@ public final class EntityLODManager implements OptimizationModule {
     public boolean shouldThrottleRender(int entityId, double distSq) {
         if (!isEnabled()) return false;
         FPSFlowConfig.EntityLODConfig lod = ConfigManager.getInstance().getConfig().entityLOD;
-        double farDist = lod.farLODDistance;
-        double medDist = lod.mediumLODDistance;
+        // When FPS is low the LOD thresholds shrink so throttling kicks in earlier,
+        // reducing render load without requiring a manual profile change.
+        double lodMult = AdaptiveRenderer.getInstance().getLODDistanceMultiplier();
+        double farDist = lod.farLODDistance * lodMult;
+        double medDist = lod.mediumLODDistance * lodMult;
         if (distSq > farDist * farDist) {
             return (entityId ^ currentTick) % 3 != 0;
         }

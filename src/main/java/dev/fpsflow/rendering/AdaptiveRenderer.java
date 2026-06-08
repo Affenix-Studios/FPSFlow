@@ -87,4 +87,18 @@ public final class AdaptiveRenderer implements OptimizationModule {
             default -> 1.0;
         };
     }
+
+    /**
+     * Returns a multiplier applied to entity LOD distance thresholds.
+     * When FPS drops, LOD kicks in at shorter distances so more entities are
+     * throttled without the player having to manually tighten their profile.
+     */
+    public double getLODDistanceMultiplier() {
+        if (!isEnabled()) return 1.0;
+        return switch (getCullingLevel()) {
+            case 2 -> 0.5;
+            case 1 -> 0.7;
+            default -> 1.0;
+        };
+    }
 }

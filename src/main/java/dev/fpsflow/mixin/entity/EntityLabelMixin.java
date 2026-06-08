@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class EntityLabelMixin {
 
     @Inject(method = "hasLabel", at = @At("RETURN"), cancellable = true)
-    private void fpsflow$cullNameplate(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+    private void fpsflow$cullNameplate(Entity entity, double squaredDistance, CallbackInfoReturnable<Boolean> cir) {
         // If the original method says no label, keep it that way
         if (!cir.getReturnValueZ()) return;
 
