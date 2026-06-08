@@ -67,13 +67,7 @@
   "fpsflow.config.entity_lod.medium_distance.tooltip": "Entities beyond this distance (blocks) render every 2nd tick.",
   "fpsflow.config.entity_lod.far_distance": "Far LOD Distance",
   "fpsflow.config.entity_lod.far_distance.tooltip": "Entities beyond this distance (blocks) render every 3rd tick.",
-
-  "fpsflow.config.nameplate_culling": "Nameplate Culling",
-  "fpsflow.config.nameplate_culling.enabled": "Enable Nameplate Culling",
-  "fpsflow.config.nameplate_culling.enabled.tooltip": "Hide entity name tags beyond the configured distance.",
-  "fpsflow.config.nameplate_culling.max_distance": "Maximum Nameplate Distance",
-  "fpsflow.config.nameplate_culling.max_distance.tooltip": "Nameplates beyond this distance (blocks) are not rendered.",
-
+  
   "fpsflow.config.item_frame": "Map Frame Throttle",
   "fpsflow.config.item_frame.enabled": "Enable Map Frame Throttle",
   "fpsflow.config.item_frame.enabled.tooltip": "Limit how often item frames with maps update their render state.",

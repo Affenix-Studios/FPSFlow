@@ -4,6 +4,9 @@
 
 FPSFlow is a client-side Fabric optimization mod that targets the biggest rendering bottlenecks in vanilla Minecraft: entities, block entities, particles, and the HUD. Every feature is measurably effective, individually toggleable, and automatically adjusts to your hardware via four built-in performance profiles.
 
+## Latest update
+- **1.5.0** — Low-FPS adaptive culling, player-safe entity LOD in multiplayer, and smarter async occlusion queue deduplication.
+
 ---
 
 ## ✦ Features

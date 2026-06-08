@@ -45,6 +45,7 @@ public final class AdaptiveRenderer implements OptimizationModule {
      * 0 = normal, 1 = aggressive (FPS < 30), 2 = very aggressive (FPS < 15).
      */
     public int getCullingLevel() {
+        if (!isEnabled()) return 0;
         double fps = SmartRenderScheduler.getInstance().getSmoothedFps();
         if (fps < CRITICAL_FPS_THRESHOLD) return 2;
         if (fps < LOW_FPS_THRESHOLD) return 1;
@@ -52,10 +53,34 @@ public final class AdaptiveRenderer implements OptimizationModule {
     }
 
     /**
+     * Returns a distance multiplier for entity culling based on current FPS.
+     * When FPS is low, entity culling becomes more aggressive.
+     */
+    public double getEntityDistanceMultiplier() {
+        return switch (getCullingLevel()) {
+            case 2 -> 0.5;
+            case 1 -> 0.8;
+            default -> 1.0;
+        };
+    }
+
+    /**
+     * Returns a distance multiplier for block entity culling based on current FPS.
+     */
+    public double getBlockEntityDistanceMultiplier() {
+        return switch (getCullingLevel()) {
+            case 2 -> 0.6;
+            case 1 -> 0.85;
+            default -> 1.0;
+        };
+    }
+
+    /**
      * Returns a distance multiplier for particle spawning based on current FPS.
      * When FPS is low, particle spawn radius is reduced further.
      */
     public double getParticleDistanceMultiplier() {
+        if (!isEnabled()) return 1.0;
         return switch (getCullingLevel()) {
             case 2 -> 0.5;
             case 1 -> 0.75;

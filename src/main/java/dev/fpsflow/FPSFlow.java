@@ -23,6 +23,6 @@ public class FPSFlow implements ModInitializer {
 
         // Update checker is initialised in FPSFlowClient (client-only)
         LOGGER.info("[FPSFlow] {} initialized – profile: {}",
-                MOD_NAME, ConfigManager.getInstance().getConfig().profile);
+                MOD_NAME, ConfigManager.getInstance().getConfig().selectedProfile);
     }
 }

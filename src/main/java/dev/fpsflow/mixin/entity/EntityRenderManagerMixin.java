@@ -7,6 +7,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.entity.EntityRenderManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,6 +36,8 @@ public abstract class EntityRenderManagerMixin {
             cir.setReturnValue(false);
             return;
         }
+
+        if (entity instanceof PlayerEntity) return;
 
         double dx = entity.getX() - cameraX;
         double dy = entity.getY() - cameraY;

@@ -6,10 +6,14 @@ import dev.fpsflow.config.FPSFlowConfig;
 import dev.fpsflow.compatibility.CompatibilityChecker;
 import dev.fpsflow.join.WorldJoinOptimizer;
 import dev.fpsflow.optimization.OptimizationModule;
+import dev.fpsflow.rendering.AdaptiveRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
@@ -18,7 +22,9 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -29,6 +35,8 @@ public final class EntityCullingManager implements OptimizationModule {
 
     private final Map<Integer, CullingEntry> cache = new ConcurrentHashMap<>();
     private final Queue<PendingCheck> pendingChecks = new ConcurrentLinkedQueue<>();
+    private final Set<Integer> pendingIds = ConcurrentHashMap.newKeySet();
+    private final Map<EntityType<?>, Optional<Boolean>> typeOverrideCache = new ConcurrentHashMap<>();
     private int currentTick = 0;
 
     private EntityCullingManager() {}
@@ -67,8 +75,10 @@ public final class EntityCullingManager implements OptimizationModule {
         if (mc.world != null && mc.player != null) {
             int batchLimit = MAX_ASYNC_RAYCASTS_PER_TICK * WorldJoinOptimizer.getInstance().getAsyncBatchMultiplier();
             int processed = 0;
-            while (!pendingChecks.isEmpty() && processed < batchLimit) {
+            while (processed < batchLimit) {
                 PendingCheck pending = pendingChecks.poll();
+                if (pending == null) break;
+                pendingIds.remove(pending.entityId());
                 boolean occluded = computeOcclusionDirect(pending.entityCenter(), pending.camPos(), mc);
                 cache.put(pending.entityId(), new CullingEntry(occluded, currentTick));
                 processed++;
@@ -94,17 +104,18 @@ public final class EntityCullingManager implements OptimizationModule {
 
         if (entity == mc.player) return false;
         if (mc.player.getVehicle() == entity) return false;
+        if (entity instanceof PlayerEntity) return false;
 
         FPSFlowConfig.EntityCullingConfig cfg = ConfigManager.getInstance().getConfig().entityCulling;
 
         // Per-entity-type override check
-        String typeId = Registries.ENTITY_TYPE.getId(entity.getType()).toString();
-        Boolean typeOverride = cfg.entityTypeOverrides.get(typeId);
+        Boolean typeOverride = getTypeOverride(entity.getType(), cfg);
         if (typeOverride != null && !typeOverride) return false; // this type is exempt
 
         Vec3d camPos = camera.getCameraPos();
         double distSq = entity.squaredDistanceTo(camPos.x, camPos.y, camPos.z);
         double maxDist = cfg.maxDistance * WorldJoinOptimizer.getInstance().getDistanceFraction();
+        maxDist *= AdaptiveRenderer.getInstance().getEntityDistanceMultiplier();
         if (distSq > maxDist * maxDist) return true;
         if (distSq < 16.0) return false;
 
@@ -117,14 +128,23 @@ public final class EntityCullingManager implements OptimizationModule {
         if (cacheValid) return entry.occluded();
 
         if (cfg.asyncOcclusion) {
-            Box box = entity.getBoundingBox();
-            pendingChecks.offer(new PendingCheck(id, camPos, box.getCenter()));
+            if (pendingIds.size() < 256 && pendingIds.add(id)) {
+                Box box = entity.getBoundingBox();
+                pendingChecks.offer(new PendingCheck(id, camPos, box.getCenter()));
+            }
             return entry != null && entry.occluded();
         }
 
         boolean occluded = computeOcclusionDirect(entity.getBoundingBox().getCenter(), camPos, mc);
         cache.put(id, new CullingEntry(occluded, currentTick));
         return occluded;
+    }
+
+    private Boolean getTypeOverride(EntityType<?> type, FPSFlowConfig.EntityCullingConfig cfg) {
+        return typeOverrideCache.computeIfAbsent(type, key -> {
+            Identifier id = Registries.ENTITY_TYPE.getId(key);
+            return id == null ? Optional.empty() : Optional.ofNullable(cfg.entityTypeOverrides.get(id.toString()));
+        }).orElse(null);
     }
 
     private boolean computeOcclusionDirect(Vec3d entityCenter, Vec3d camPos, MinecraftClient mc) {

@@ -8,6 +8,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FPSFlowConfigScreen extends Screen {
 
     private static final int BTN_W = 150;
@@ -33,6 +36,12 @@ public class FPSFlowConfigScreen extends Screen {
         addDrawableChild(ButtonWidget.builder(profileText(), btn -> {
             cycleProfile();
             btn.setMessage(profileText());
+        }).dimensions(cx - 100, y, 200, BTN_H).build());
+
+        y += SPACING + 6;
+        addDrawableChild(ButtonWidget.builder(Text.literal("Save Custom Profile"), btn -> {
+            saveCurrentAsCustomProfile();
+            btn.setMessage(Text.literal("Saved as " + cfg.selectedProfile));
         }).dimensions(cx - 100, y, 200, BTN_H).build());
 
         y += SPACING + 6;
@@ -80,9 +89,6 @@ public class FPSFlowConfigScreen extends Screen {
         addDrawableChild(toggleBtn(lx, y, "Entity LOD",
                 () -> cfg.entityLOD.enabled,
                 v -> cfg.entityLOD.enabled = v));
-        addDrawableChild(toggleBtn(rx, y, "Nameplate Culling",
-                () -> cfg.nameplateCulling.enabled,
-                v -> cfg.nameplateCulling.enabled = v));
         y += SPACING;
 
         // Row 6
@@ -110,19 +116,70 @@ public class FPSFlowConfigScreen extends Screen {
     }
 
     private Text profileText() {
-        PerformanceProfile p = cfg.profile != null ? cfg.profile : PerformanceProfile.BALANCED;
-        return Text.literal("Profile: " + p.name());
+        String selected = cfg.selectedProfile != null ? cfg.selectedProfile : PerformanceProfile.BALANCED.name();
+        return Text.literal("Profile: " + selected);
     }
 
     private void cycleProfile() {
-        PerformanceProfile[] values = PerformanceProfile.values();
-        PerformanceProfile current = cfg.profile != null ? cfg.profile : PerformanceProfile.BALANCED;
-        int next = (current.ordinal() + 1) % values.length;
-        cfg.profile = values[next];
-        cfg.profile.apply(cfg);
+        List<String> profileNames = new ArrayList<>();
+        for (PerformanceProfile profile : PerformanceProfile.values()) {
+            profileNames.add(profile.name());
+        }
+        profileNames.addAll(cfg.customProfiles.keySet());
+
+        if (profileNames.isEmpty()) {
+            cfg.selectedProfile = PerformanceProfile.BALANCED.name();
+            PerformanceProfile.BALANCED.apply(cfg);
+            ConfigManager.getInstance().save();
+            clearAndInit();
+            return;
+        }
+
+        String current = cfg.selectedProfile != null ? cfg.selectedProfile : profileNames.get(0);
+        int index = profileNames.indexOf(current);
+        if (index < 0) index = 0;
+        int next = (index + 1) % profileNames.size();
+        String nextName = profileNames.get(next);
+        cfg.selectedProfile = nextName;
+
+        if (isBuiltInProfile(nextName)) {
+            PerformanceProfile.valueOf(nextName).apply(cfg);
+            cfg.profile = PerformanceProfile.valueOf(nextName);
+        } else {
+            FPSFlowConfig.CustomProfile custom = cfg.customProfiles.get(nextName);
+            if (custom != null) {
+                custom.applyTo(cfg);
+            } else {
+                PerformanceProfile.BALANCED.apply(cfg);
+                cfg.profile = PerformanceProfile.BALANCED;
+                cfg.selectedProfile = PerformanceProfile.BALANCED.name();
+            }
+        }
+
         ConfigManager.getInstance().save();
-        // Rebuild buttons to reflect new toggle states
         clearAndInit();
+    }
+
+    private void saveCurrentAsCustomProfile() {
+        String baseName = "Custom";
+        int suffix = 1;
+        String candidate = baseName + " " + suffix;
+        while (cfg.customProfiles.containsKey(candidate)) {
+            suffix++;
+            candidate = baseName + " " + suffix;
+        }
+        cfg.customProfiles.put(candidate, new FPSFlowConfig.CustomProfile(cfg));
+        cfg.selectedProfile = candidate;
+        ConfigManager.getInstance().save();
+    }
+
+    private boolean isBuiltInProfile(String profileName) {
+        try {
+            PerformanceProfile.valueOf(profileName);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override

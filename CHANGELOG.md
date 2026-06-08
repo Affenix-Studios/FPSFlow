@@ -1,7 +1,34 @@
 # Changelog
 ---
 
+## [1.5.0]
+
+### Fixed
+- **Preserve player rendering in PvP views** — other players are no longer subject to entity LOD throttling, so F5 and multiplayer combat remain crisp.
+- **Avoid duplicate async occlusion checks** — the entity culling queue now deduplicates requests and limits backlog growth, reducing spikey workload when many entities are near the visibility threshold.
+- **Faster entity-type override lookups** — entity type override checks are cached to avoid repeated string allocations during render traversal.
+
+### Added
+- **Low-FPS adaptive culling** — entity and block entity culling distances are reduced automatically when FPS drops, so busy scenes become smoother.
+
+### Changed
+- `mod_version` bumped to `1.5.0`.
+
+### Notes
+- These changes target intermittent hangs and render stalls, especially during view changes and busy entity scenes.
+
+## [1.4.0]
+
+### Added
+- **Custom profiles** — create your own performance presets and switch between built-in and saved custom profiles using the in-game profile button.
+- **Profile persistence** — selected custom profiles now load automatically at startup.
+- **Custom profile management** — both built-in and saved profile state are preserved across sessions.
+
+### Changed
+- **Config workflow improved** — profile selection and custom preset behavior now work more reliably in the in-game config screen.
+
 ## [1.3.1]
+
 
 ### Fixed
 - **Nameplate flicker at distance** – name tags no longer rapidly blink on/off when an entity hovers near the culling threshold

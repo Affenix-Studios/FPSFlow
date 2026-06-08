@@ -67,13 +67,7 @@
   "fpsflow.config.entity_lod.medium_distance.tooltip": "Entities jenseits dieser Distanz (Blöcke) werden nur jeden 2. Tick gerendert.",
   "fpsflow.config.entity_lod.far_distance": "Weit-LOD-Distanz",
   "fpsflow.config.entity_lod.far_distance.tooltip": "Entities jenseits dieser Distanz (Blöcke) werden nur jeden 3. Tick gerendert.",
-
-  "fpsflow.config.nameplate_culling": "Nameplate-Culling",
-  "fpsflow.config.nameplate_culling.enabled": "Nameplate-Culling aktivieren",
-  "fpsflow.config.nameplate_culling.enabled.tooltip": "Versteckt Entity-Namensschilder jenseits der konfigurierten Distanz.",
-  "fpsflow.config.nameplate_culling.max_distance": "Maximale Nameplate-Distanz",
-  "fpsflow.config.nameplate_culling.max_distance.tooltip": "Namensschilder jenseits dieser Distanz (Blöcke) werden nicht gerendert.",
-
+  
   "fpsflow.config.item_frame": "Karten-Rahmen-Drosselung",
   "fpsflow.config.item_frame.enabled": "Karten-Rahmen-Drosselung aktivieren",
   "fpsflow.config.item_frame.enabled.tooltip": "Begrenzt wie oft Item-Rahmen mit Karten ihren Renderstatus aktualisieren.",

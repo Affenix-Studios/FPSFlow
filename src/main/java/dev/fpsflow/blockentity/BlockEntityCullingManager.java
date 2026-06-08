@@ -4,6 +4,7 @@ import dev.fpsflow.FPSFlow;
 import dev.fpsflow.config.ConfigManager;
 import dev.fpsflow.join.WorldJoinOptimizer;
 import dev.fpsflow.optimization.OptimizationModule;
+import dev.fpsflow.rendering.AdaptiveRenderer;
 import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
 import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.util.math.BlockPos;
@@ -45,6 +46,7 @@ public final class BlockEntityCullingManager implements OptimizationModule {
 
         double maxDist = ConfigManager.getInstance().getConfig().blockEntityCulling.maxDistance
                 * WorldJoinOptimizer.getInstance().getDistanceFraction();
+        maxDist *= AdaptiveRenderer.getInstance().getBlockEntityDistanceMultiplier();
         Vec3d camPos = camera.pos;
         if (camPos == null) return false;
 
