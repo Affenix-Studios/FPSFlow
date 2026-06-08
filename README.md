@@ -79,9 +79,11 @@ Automatically detects and gracefully co-exists with:
 | Profile | Entity Culling | BE Culling | Entity LOD (med/far) | Nameplate | Map Throttle |
 |---------|:---:|:---:|:---:|:---:|:---:|
 | Quality | ✓ (128 b) | ✗ | ✓ (48/96 b) | ✗ | ✗ |
-| Balanced | ✓ (64 b) | ✓ (64 b) | ✓ (32/64 b) | ✓ 32 b | ✓ /3 t |
-| Performance | ✓ (48 b) | ✓ (48 b) | ✓ (24/48 b) | ✓ 24 b | ✓ /4 t |
+| Balanced | ✓ (64 b) | ✓ (64 b) | ✓ (40/80 b) | ✓ 32 b | ✓ /3 t |
+| Performance | ✓ (48 b) | ✓ (48 b) | ✓ (40/80 b)* | ✓ 24 b | ✓ /4 t |
 | Ultra Performance | ✓ (32 b) | ✓ (32 b) | ✓ (16/32 b) | ✓ 16 b | ✓ /5 t |
+
+*Default Balanced Medium/Far distances were widened in 1.5.1 for better visibility and smoother distant entity behavior.
 
 ---
 

@@ -5,7 +5,7 @@
 FPSFlow is a client-side Fabric optimization mod that targets the biggest rendering bottlenecks in vanilla Minecraft: entities, block entities, particles, and the HUD. Every feature is measurably effective, individually toggleable, and automatically adjusts to your hardware via four built-in performance profiles.
 
 ## Latest update
-- **1.5.0** — Low-FPS adaptive culling, player-safe entity LOD in multiplayer, and smarter async occlusion queue deduplication.
+- **1.5.1** — Server-aware nameplate culling, configurable Entity LOD distances via ModMenu sliders, and smoother distant entity defaults.
 
 ---
 
@@ -27,6 +27,7 @@ Entities that are too far away to matter still get submitted to the renderer eve
 - **Far LOD** (>64 blocks on Balanced): entity renders every 3rd tick
 - XOR-based distribution staggers throttling across entities, so the skip isn't synchronized across the entire scene
 - Fully profile-aware — distances adjust automatically; toggle in the config screen
+- **New in 1.5.1:** Medium/Far thresholds are now configurable via ModMenu sliders for fine-tuned visibility vs. performance
 
 ### Nameplate Culling *(new in 1.3.0)*
 Name tags float above every entity, even ones you can barely see. Nameplate Culling hides them beyond a configurable distance:
@@ -34,6 +35,7 @@ Name tags float above every entity, even ones you can barely see. Nameplate Cull
 - Works for players, mobs, armor stands — any entity with a rendered label
 - Default: 32 blocks on Balanced (adjusts with each profile)
 - Toggle in the config screen
+- **Improved in 1.5.1:** server-enforced nameplate visibility is now respected so client culling won’t conflict with server rules
 
 ### Map Item Frame Throttle *(new in 1.3.0)*
 Maps in item frames re-evaluate their render state every single frame — even when nothing on the map has changed.

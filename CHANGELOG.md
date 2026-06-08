@@ -1,6 +1,22 @@
 # Changelog
 ---
 
+## [1.5.1]
+
+### Fixed
+- **Server-forced nameplate visibility** — nameplate culling now respects when a server forces nametag visibility via game rules or plugins
+  - Added detection for `showDeathMessages` and nameplate override packets
+  - Nameplate culling gracefully backs off when the server mandates visibility, avoiding visual conflicts
+  - Prevents nametag flickering caused by client/server visibility disagreement
+
+### Changed
+- Nameplate culling is now more robust in multiplayer scenarios with varied server configurations
+- Server-side nameplate settings are now honored alongside client-side distance culling
+- Entity LOD distances are now configurable, so medium/far render skip thresholds can be tuned per profile or saved custom profile
+- Default Balanced Entity LOD distances widened to 40 / 80 blocks for smoother distant entity rendering
+
+---
+
 ## [1.5.0]
 
 ### Fixed

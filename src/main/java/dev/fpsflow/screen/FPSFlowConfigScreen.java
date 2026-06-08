@@ -6,10 +6,13 @@ import dev.fpsflow.config.PerformanceProfile;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
 public class FPSFlowConfigScreen extends Screen {
 
@@ -92,6 +95,17 @@ public class FPSFlowConfigScreen extends Screen {
         y += SPACING;
 
         // Row 6
+        addDrawableChild(createSlider(lx, y, "Medium LOD distance",
+                () -> cfg.entityLOD.mediumLODDistance,
+                v -> cfg.entityLOD.mediumLODDistance = v,
+                8, 128));
+        addDrawableChild(createSlider(rx, y, "Far LOD distance",
+                () -> cfg.entityLOD.farLODDistance,
+                v -> cfg.entityLOD.farLODDistance = v,
+                16, 256));
+        y += SPACING;
+
+        // Row 7
         addDrawableChild(toggleBtn(lx, y, "Map Frame Throttle",
                 () -> cfg.itemFrame.enabled,
                 v -> cfg.itemFrame.enabled = v));
@@ -180,6 +194,30 @@ public class FPSFlowConfigScreen extends Screen {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    private SliderWidget createSlider(int x, int y, String label,
+                                        IntSupplier getter, IntConsumer setter,
+                                        int min, int max) {
+        double initialValue = (double)(getter.getAsInt() - min) / (max - min);
+        SliderWidget slider = new SliderWidget(x, y, BTN_W, BTN_H,
+                Text.literal(label + ": " + getter.getAsInt()), initialValue) {
+            @Override
+            protected void updateMessage() {
+                int value = min + (int) Math.round(this.value * (max - min));
+                setMessage(Text.literal(label + ": " + value));
+            }
+
+            @Override
+            protected void applyValue() {
+                int value = min + (int) Math.round(this.value * (max - min));
+                if (value < min) value = min;
+                if (value > max) value = max;
+                setter.accept(value);
+                ConfigManager.getInstance().save();
+            }
+        };
+        return slider;
     }
 
     @Override
