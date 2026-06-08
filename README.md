@@ -18,61 +18,63 @@
 - **Distance culling** – configurable maximum render distance per entity
 - **Per-entity-type overrides** – exempt specific entity types from culling via config
 
+### Painting Back-Face Culling *(new in 1.6.0)*
+- The back face of a painting is solid and never visible — FPSFlow skips it at render time
+- Dot-product check against the painting's facing normal; zero false positives
+- Toggle via `entityCulling.paintingBackfaceCulling` (default: `true`)
+- Accessible in the ModMenu config screen *(new in 1.6.1)*
+
 ### Entity LOD *(new in 1.3.0)*
 - **Medium LOD** – entities beyond the configured medium distance render every 2nd tick
 - **Far LOD** – entities beyond the far distance render every 3rd tick
 - XOR-based distribution staggers throttling across entities to avoid synchronized "freeze frames"
 - **FPS-adaptive tightening** *(new in 1.6.0)* – when FPS drops below 30/15, LOD thresholds shrink automatically (0.7×/0.5×) without requiring a manual profile change
-- Fully profile-aware; toggle in-game
+- Fully profile-aware; toggle and adjust distances in-game
 
 ### Nameplate Culling *(new in 1.3.0)*
 - Entity name tags beyond a configurable distance are hidden entirely
 - Works for players, mobs, armor stands — anything with a rendered label
-- **Server NPC awareness** *(new in 1.6.0)* – entities whose nametag is set to always-visible by the server (`isCustomNameVisible`) are never culled, preventing the flickering that occurred when plugin NPCs fought the mod's distance check
+- **Server NPC awareness** *(new in 1.6.0)* – entities whose nametag is set to always-visible by the server (`isCustomNameVisible`) are never culled, preventing flickering on plugin NPC servers
 
 ### Map Item Frame Throttle *(new in 1.3.0)*
 - Item frames holding maps update their render state every N ticks instead of every frame
 - First render always runs in full; throttle activates after initial map texture load
 
-### Block Entity Culling
+### Block Entity Culling *(new in 1.1.0)*
 - **Distance culling** – chests, furnaces, signs, banners, item frames, and armor stands beyond the configured distance are not rendered
 - Fully configurable max distance, adjusts with each performance profile
 
 ### Particle Optimization
 - **Count cap** – no new particles spawn once the configured limit is reached
-- **Tiered density LOD** *(new in 1.6.0)* – three distance zones: near (< `midDistance`): 100 %; mid zone: ~50 % via stable position hash; beyond `maxDistance`: 0 %. Smoother visual falloff instead of a hard cutoff
+- **Tiered density LOD** *(new in 1.6.0)* – three distance zones: near (< `midDistance`): 100 %; mid zone: ~50 % via stable position hash; beyond `maxDistance`: 0 %
 - **Adaptive reduction** – when FPS drops, the effective spawn radius shrinks automatically
+
+### Background FPS Limiter *(new in 1.6.0)*
+- Caps the frame rate when the Minecraft window is unfocused or minimised
+- Configurable per state: unfocused (default 60 FPS) and minimised (default 30 FPS)
+- Post-frame sleep on the render thread; MC's tick catch-up logic handles any missed ticks
+- Profile-aware caps (Quality: 30/10, Balanced: 60/30, Performance: 10/3, Ultra Performance: 5/2)
+- Toggle and adjust FPS caps in the ModMenu config screen *(new in 1.6.1)*
 
 ### GUI & HUD Optimization
 - **Hotbar slot caching** – dirty-flag tracking per slot avoids redundant icon processing
-- **HUD update throttling** – non-critical stat updates are gated to every-other-tick; forces immediate update when stats actually change *(improved in 1.3.0)*
+- **HUD update throttling** – non-critical stat updates are gated to every-other-tick; forces immediate update when stats actually change
 - **ImmediatelyFast awareness** – HUD caching is automatically disabled when ImmediatelyFast is present
-
-### Background FPS Limiter *(new in 1.6.0)*
-- Caps the frame rate when the Minecraft window is unfocused or minimised — stops the GPU from spinning at full speed for no one
-- Configurable FPS targets per state: unfocused (default 60 FPS) and minimised (default 30 FPS)
-- Implemented as a post-frame sleep on the render thread; MC's tick catch-up logic handles any missed ticks normally
-- Caps adjust with each performance profile (Quality: 30/10, Balanced: 60/30, Performance: 10/3, Ultra Performance: 5/2)
-- Toggle via `backgroundFps.enabled`; inspired by [Dynamic FPS](https://modrinth.com/mod/dynamic-fps)
-
-### Painting Back-Face Culling *(new in 1.6.0)*
-- Skips rendering paintings when the camera is on their back side — the back face is never visible anyway
-- Uses a dot-product check against the painting's facing normal; zero CPU overhead per-frame when the painting is in front
-- Toggle via `entityCulling.paintingBackfaceCulling` (default: `true`)
 
 ### Adaptive Rendering
 - **Smoothed FPS monitoring** – exponential moving average keeps FPS estimates stable
 - **Dynamic culling levels** – culling aggressiveness increases automatically below 30 FPS and again below 15 FPS
 
-### World Join Optimizer
+### World Join Optimizer *(new in 1.2.0)*
 - **Grace period** – on joining a world, culling distances start at 35% of normal and ease back to 100% over ~10 seconds
 - Prevents the initial entity and chunk flood from tanking FPS during the first seconds after load
 - Async occlusion batch triples during the grace period to clear the raycast backlog faster
 - Configurable grace period length; toggleable via the in-game config screen
 
-### In-game Config Screen
+### In-game Config Screen *(new in 1.1.0)*
 - Install [ModMenu](https://modrinth.com/mod/modmenu) to access the config screen directly in-game
-- Switch profiles and toggle features with one click — no JSON editing required
+- Switch profiles, toggle every feature, and adjust FPS caps and LOD distances — no JSON editing required
+- **Fully updated in 1.6.1** – Background FPS Limit, Unfocused/Minimized FPS cap sliders, Painting Backface Culling, and Nameplate Culling toggles added
 
 ### Compatibility Detection
 Automatically detects and gracefully co-exists with:
@@ -90,7 +92,7 @@ Automatically detects and gracefully co-exists with:
 
 ## Performance Profiles
 
-| Profile | Entity Culling | BE Culling | LOD (med/far) | Nameplate | Particle (mid/max) | Map Throttle | BG FPS (unfocused/min) |
+| Profile | Entity Culling | BE Culling | LOD (med/far) | Nameplate | Particle (mid/max) | Map Throttle | BG FPS (unfoc/min) |
 |---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | Quality | ✓ (128 b) | ✗ | ✓ (48/96 b) | ✗ | Off | ✗ | 30/10 |
 | Balanced | ✓ (64 b) | ✓ (64 b) | ✓ (40/80 b) | ✓ 32 b | 32/64 b | ✓ /3 t | 60/30 |
@@ -154,7 +156,21 @@ Config file: `.minecraft/config/fpsflow.json`
     "hotbarCaching": true,
     "hudUpdateThrottling": true
   },
-  "renderCaching": { "enabled": true }
+  "renderCaching": { "enabled": true },
+  "entityLOD": {
+    "enabled": true,
+    "mediumLODDistance": 40,
+    "farLODDistance": 80
+  },
+  "nameplateCulling": {
+    "enabled": true,
+    "maxDistance": 32,
+    "checkIntervalTicks": 10
+  },
+  "itemFrame": {
+    "enabled": true,
+    "mapUpdateIntervalTicks": 3
+  }
 }
 ```
 

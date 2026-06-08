@@ -68,7 +68,11 @@ public final class BackgroundFpsLimiter implements OptimizationModule {
 
         boolean iconified = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_ICONIFIED) == 1;
         FPSFlowConfig.BackgroundFpsConfig cfg = ConfigManager.getInstance().getConfig().backgroundFps;
-        int targetFps = Math.max(1, iconified ? cfg.minimizedFpsCap : cfg.unfocusedFpsCap);
+        int targetFps = iconified ? cfg.minimizedFpsCap : cfg.unfocusedFpsCap;
+        if (targetFps <= 0) {
+            lastFrameNanos = System.nanoTime();
+            return;
+        }
 
         long targetFrameNanos = 1_000_000_000L / targetFps;
         long now = System.nanoTime();

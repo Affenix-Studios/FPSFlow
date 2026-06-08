@@ -1,6 +1,22 @@
 # Changelog
 ---
 
+## [1.6.1]
+
+### Added
+- **ModMenu config screen updated** — all features introduced in 1.6.0 are now accessible without editing JSON:
+  - **Nameplate Culling** toggle (was previously missing from the screen)
+  - **Background FPS Limit** toggle
+  - **Unfocused FPS cap** slider (0–480 FPS)
+  - **Minimized FPS cap** slider (0–480 FPS)
+  - **Painting Backface Culling** toggle
+- **Unlimited FPS cap** — setting either Background FPS cap to `0` (leftmost slider position, or `"unfocusedFpsCap": 0` / `"minimizedFpsCap": 0` in the config JSON) disables the frame rate limit for that state entirely. The slider label shows `Unlimited` when at `0`.
+
+### Fixed
+- `GameRendererMixin` parameter signature corrected for MC 1.21.11 — the `render()` method now takes a `RenderTickCounter` instead of `(float tickDelta, long startTime)`, which previously caused a crash on launch.
+
+---
+
 ## [1.6.0]
 
 ### Fixed

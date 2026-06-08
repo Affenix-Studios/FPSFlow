@@ -92,6 +92,9 @@ public class FPSFlowConfigScreen extends Screen {
         addDrawableChild(toggleBtn(lx, y, "Entity LOD",
                 () -> cfg.entityLOD.enabled,
                 v -> cfg.entityLOD.enabled = v));
+        addDrawableChild(toggleBtn(rx, y, "Nameplate Culling",
+                () -> cfg.nameplateCulling.enabled,
+                v -> cfg.nameplateCulling.enabled = v));
         y += SPACING;
 
         // Row 6
@@ -109,6 +112,24 @@ public class FPSFlowConfigScreen extends Screen {
         addDrawableChild(toggleBtn(lx, y, "Map Frame Throttle",
                 () -> cfg.itemFrame.enabled,
                 v -> cfg.itemFrame.enabled = v));
+        addDrawableChild(toggleBtn(rx, y, "Painting Backface Cull",
+                () -> cfg.entityCulling.paintingBackfaceCulling,
+                v -> cfg.entityCulling.paintingBackfaceCulling = v));
+        y += SPACING;
+
+        // Row 8
+        addDrawableChild(toggleBtn(lx, y, "Background FPS Limit",
+                () -> cfg.backgroundFps.enabled,
+                v -> cfg.backgroundFps.enabled = v));
+        y += SPACING;
+
+        // Row 9
+        addDrawableChild(createFpsCapSlider(lx, y, "Unfocused FPS cap",
+                () -> cfg.backgroundFps.unfocusedFpsCap,
+                v -> cfg.backgroundFps.unfocusedFpsCap = v));
+        addDrawableChild(createFpsCapSlider(rx, y, "Minimized FPS cap",
+                () -> cfg.backgroundFps.minimizedFpsCap,
+                v -> cfg.backgroundFps.minimizedFpsCap = v));
 
         // Done
         addDrawableChild(ButtonWidget.builder(Text.literal("Done"), btn -> close())
@@ -218,6 +239,34 @@ public class FPSFlowConfigScreen extends Screen {
             }
         };
         return slider;
+    }
+
+    /**
+     * FPS-cap slider: 0 = Unlimited, 1–480 FPS.
+     * The internal slider value maps linearly over [0, 480].
+     */
+    private SliderWidget createFpsCapSlider(int x, int y, String label,
+                                            IntSupplier getter, IntConsumer setter) {
+        final int MAX_FPS = 480;
+        double initial = (double) Math.max(0, getter.getAsInt()) / MAX_FPS;
+        return new SliderWidget(x, y, BTN_W, BTN_H,
+                Text.literal(fpsCapLabel(label, getter.getAsInt())), initial) {
+            @Override
+            protected void updateMessage() {
+                int v = (int) Math.round(this.value * MAX_FPS);
+                setMessage(Text.literal(fpsCapLabel(label, v)));
+            }
+            @Override
+            protected void applyValue() {
+                int v = (int) Math.round(this.value * MAX_FPS);
+                setter.accept(v);
+                ConfigManager.getInstance().save();
+            }
+        };
+    }
+
+    private static String fpsCapLabel(String label, int fps) {
+        return label + ": " + (fps <= 0 ? "Unlimited" : fps);
     }
 
     @Override
