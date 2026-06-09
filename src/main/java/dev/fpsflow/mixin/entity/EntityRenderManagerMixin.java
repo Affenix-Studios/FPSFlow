@@ -54,10 +54,24 @@ public abstract class EntityRenderManagerMixin {
 
         if (entity instanceof PlayerEntity) return;
 
+        // Server-forced visible entities (plugin NPCs, always-visible name tags) must not be
+        // LOD-throttled: skipping their render pass drops their visible label, causing flicker.
+        if (entity.isCustomNameVisible()) return;
+
         double dx = entity.getX() - cameraX;
         double dy = entity.getY() - cameraY;
         double dz = entity.getZ() - cameraZ;
-        if (EntityLODManager.getInstance().shouldThrottleRender(entity.getId(), dx * dx + dy * dy + dz * dz)) {
+        double squaredDist = dx * dx + dy * dy + dz * dz;
+
+        // Skip LOD throttle for any entity within nameplate range regardless of whether
+        // nameplate culling is enabled — LOD suppresses the whole render pass including the
+        // label, so entities near the boundary flicker at the LOD rate.
+        dev.fpsflow.config.FPSFlowConfig.NameplateCullingConfig npCfg =
+                ConfigManager.getInstance().getConfig().nameplateCulling;
+        double nd = npCfg.maxDistance;
+        if (squaredDist <= nd * nd) return;
+
+        if (EntityLODManager.getInstance().shouldThrottleRender(entity.getId(), squaredDist)) {
             cir.setReturnValue(false);
         }
     }

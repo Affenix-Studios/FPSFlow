@@ -57,11 +57,10 @@ public final class EntityLODManager implements OptimizationModule {
         // reducing render load without requiring a manual profile change.
         double lodMult = AdaptiveRenderer.getInstance().getLODDistanceMultiplier();
         double farDist = lod.farLODDistance * lodMult;
-        double medDist = lod.mediumLODDistance * lodMult;
         if (distSq > farDist * farDist) {
-            return (entityId ^ currentTick) % 3 != 0;
-        }
-        if (distSq > medDist * medDist) {
+            // Beyond the LOD threshold: skip every other render tick (50 % render rate).
+            // At this distance entity movement is tiny on screen — the skipped frames
+            // are imperceptible while the GPU saving is significant.
             return (entityId ^ currentTick) % 2 != 0;
         }
         return false;

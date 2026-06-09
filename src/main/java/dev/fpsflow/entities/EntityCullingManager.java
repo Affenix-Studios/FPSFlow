@@ -16,7 +16,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
@@ -79,7 +78,7 @@ public final class EntityCullingManager implements OptimizationModule {
                 PendingCheck pending = pendingChecks.poll();
                 if (pending == null) break;
                 pendingIds.remove(pending.entityId());
-                boolean occluded = computeOcclusionDirect(pending.entityCenter(), pending.camPos(), mc);
+                boolean occluded = rayCast(pending.camPos(), pending.samplePoint(), mc);
                 cache.put(pending.entityId(), new CullingEntry(occluded, currentTick));
                 processed++;
             }
@@ -106,18 +105,23 @@ public final class EntityCullingManager implements OptimizationModule {
         if (mc.player.getVehicle() == entity) return false;
         if (entity instanceof PlayerEntity) return false;
 
+        // Entities whose nameplate is forced always-visible by the server are cosmetically
+        // important server objects (NPCs, display minecarts, cosmetic entities).
+        // Culling them races against server-side metadata updates and causes persistent flicker,
+        // exactly as it did for nameplate visibility before 1.6.0.
+        if (entity.isCustomNameVisible()) return false;
+
         FPSFlowConfig.EntityCullingConfig cfg = ConfigManager.getInstance().getConfig().entityCulling;
 
-        // Per-entity-type override check
         Boolean typeOverride = getTypeOverride(entity.getType(), cfg);
-        if (typeOverride != null && !typeOverride) return false; // this type is exempt
+        if (typeOverride != null && !typeOverride) return false;
 
         Vec3d camPos = camera.getCameraPos();
         double distSq = entity.squaredDistanceTo(camPos.x, camPos.y, camPos.z);
         double maxDist = cfg.maxDistance * WorldJoinOptimizer.getInstance().getDistanceFraction();
         maxDist *= AdaptiveRenderer.getInstance().getEntityDistanceMultiplier();
         if (distSq > maxDist * maxDist) return true;
-        if (distSq < 16.0) return false;
+        if (distSq < 16.0) return false;  // within 4 blocks → never cull
 
         if (!cfg.occlusionCulling) return false;
 
@@ -127,15 +131,20 @@ public final class EntityCullingManager implements OptimizationModule {
 
         if (cacheValid) return entry.occluded();
 
+        // Use the entity's eye position rather than the AABB centre.
+        // Eye pos is naturally higher than centre (avoids floor-level false positives
+        // for small entities) while still staying safely below the top of the AABB,
+        // so it does not poke above walls and cause false negatives.
+        Vec3d samplePoint = entity.getEyePos();
+
         if (cfg.asyncOcclusion) {
             if (pendingIds.size() < 256 && pendingIds.add(id)) {
-                Box box = entity.getBoundingBox();
-                pendingChecks.offer(new PendingCheck(id, camPos, box.getCenter()));
+                pendingChecks.offer(new PendingCheck(id, camPos, samplePoint));
             }
             return entry != null && entry.occluded();
         }
 
-        boolean occluded = computeOcclusionDirect(entity.getBoundingBox().getCenter(), camPos, mc);
+        boolean occluded = rayCast(camPos, samplePoint, mc);
         cache.put(id, new CullingEntry(occluded, currentTick));
         return occluded;
     }
@@ -147,10 +156,9 @@ public final class EntityCullingManager implements OptimizationModule {
         }).orElse(null);
     }
 
-    private boolean computeOcclusionDirect(Vec3d entityCenter, Vec3d camPos, MinecraftClient mc) {
+    private boolean rayCast(Vec3d from, Vec3d to, MinecraftClient mc) {
         RaycastContext ctx = new RaycastContext(
-                camPos,
-                entityCenter,
+                from, to,
                 RaycastContext.ShapeType.VISUAL,
                 RaycastContext.FluidHandling.NONE,
                 mc.player
@@ -164,5 +172,5 @@ public final class EntityCullingManager implements OptimizationModule {
     }
 
     private record CullingEntry(boolean occluded, int lastCheckedTick) {}
-    private record PendingCheck(int entityId, Vec3d camPos, Vec3d entityCenter) {}
+    private record PendingCheck(int entityId, Vec3d camPos, Vec3d samplePoint) {}
 }

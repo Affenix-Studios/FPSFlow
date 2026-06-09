@@ -3,6 +3,7 @@ package dev.fpsflow.rendering;
 import dev.fpsflow.FPSFlow;
 import dev.fpsflow.config.ConfigManager;
 import dev.fpsflow.optimization.OptimizationModule;
+import net.minecraft.client.MinecraftClient;
 
 /**
  * Monitors runtime FPS and dynamically adjusts optimization aggressiveness.
@@ -53,51 +54,45 @@ public final class AdaptiveRenderer implements OptimizationModule {
     }
 
     /**
-     * Returns a distance multiplier for entity culling based on current FPS.
-     * When FPS is low, entity culling becomes more aggressive.
+     * True when the integrated server is running (singleplayer / LAN host).
+     * In singleplayer the render thread shares CPU with the server thread, so
+     * more aggressive culling frees headroom for chunk generation.
      */
+    private boolean isSingleplayer() {
+        return ConfigManager.getInstance().getConfig().singleplayerOpt.enabled
+                && MinecraftClient.getInstance().isIntegratedServerRunning();
+    }
+
     public double getEntityDistanceMultiplier() {
         return switch (getCullingLevel()) {
-            case 2 -> 0.5;
-            case 1 -> 0.8;
+            case 2 -> isSingleplayer() ? 0.4 : 0.5;
+            case 1 -> isSingleplayer() ? 0.65 : 0.8;
             default -> 1.0;
         };
     }
 
-    /**
-     * Returns a distance multiplier for block entity culling based on current FPS.
-     */
     public double getBlockEntityDistanceMultiplier() {
         return switch (getCullingLevel()) {
-            case 2 -> 0.6;
-            case 1 -> 0.85;
+            case 2 -> isSingleplayer() ? 0.5 : 0.6;
+            case 1 -> isSingleplayer() ? 0.7 : 0.85;
             default -> 1.0;
         };
     }
 
-    /**
-     * Returns a distance multiplier for particle spawning based on current FPS.
-     * When FPS is low, particle spawn radius is reduced further.
-     */
     public double getParticleDistanceMultiplier() {
         if (!isEnabled()) return 1.0;
         return switch (getCullingLevel()) {
-            case 2 -> 0.5;
-            case 1 -> 0.75;
+            case 2 -> isSingleplayer() ? 0.4 : 0.5;
+            case 1 -> isSingleplayer() ? 0.6 : 0.75;
             default -> 1.0;
         };
     }
 
-    /**
-     * Returns a multiplier applied to entity LOD distance thresholds.
-     * When FPS drops, LOD kicks in at shorter distances so more entities are
-     * throttled without the player having to manually tighten their profile.
-     */
     public double getLODDistanceMultiplier() {
         if (!isEnabled()) return 1.0;
         return switch (getCullingLevel()) {
-            case 2 -> 0.5;
-            case 1 -> 0.7;
+            case 2 -> isSingleplayer() ? 0.4 : 0.5;
+            case 1 -> isSingleplayer() ? 0.6 : 0.7;
             default -> 1.0;
         };
     }

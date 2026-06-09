@@ -11,8 +11,8 @@
   ],
   "contact": {
     "homepage": "https://modrinth.com/mod/fpsflow",
-    "sources": "https://github.com/fpsflow/fpsflow",
-    "issues": "https://github.com/fpsflow/fpsflow/issues"
+    "sources": "https://github.com/McAffe13/FPSFlow",
+    "issues": "https://github.com/McAffe13/FPSFlow/issues"
   },
   "license": "MPL-2.0",
   "icon": "assets/fpsflow/icon.png",

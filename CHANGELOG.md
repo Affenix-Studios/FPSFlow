@@ -1,6 +1,39 @@
 # Changelog
 ---
 
+## [1.7.0]
+
+### Fixed
+- **Entity flicker in hubs and lobbies eliminated** — Entity LOD now has a single distance threshold (Balanced: 96 b) instead of two zones. Entities within that distance always render every frame; beyond it they render every other tick. The previous two-zone system started throttling as close as 40 blocks, causing clearly visible flicker on any lobby NPC or minecart. The threshold is now well beyond typical hub visibility range, so flicker is gone in practice.
+- **Server-NPC and cosmetic entity flicker eliminated** — Entities whose nametag is set always-visible by the server (`isCustomNameVisible`) are now fully exempt from **both** Entity LOD throttling **and** entity culling (occlusion + distance). This covers plugin NPCs, display minecarts, cosmetic vehicles, and any other entity a server marks as permanently visible.
+- **Nameplate LOD exemption widened** — Any entity within the configured nameplate range is now exempt from LOD even when nameplate culling is globally disabled.
+- **Small entity occlusion false-positives reduced** — The occlusion raycast now targets the entity's **eye position** instead of the geometric AABB centre, preventing floor-level false positives for small entities (floating mob heads, armor stands, item displays).
+
+### Added
+- **Menu/loading FPS cap** — When the Minecraft window is focused but no world is loaded (title screen, loading screen, server selection), the frame rate is now capped (default 120 FPS). This stops the GPU from spinning at thousands of FPS on a static menu, freeing thermal headroom for faster texture and world loading. Configurable via the Background FPS tab in the ModMenu config screen.
+- **Singleplayer Boost** — New toggle in the config screen (General tab). When enabled, the adaptive renderer uses more aggressive culling multipliers in singleplayer to free CPU for chunk generation threads.
+- **Nameplate distance slider** — The nameplate culling range is now adjustable directly in the ModMenu config screen (LOD & Labels tab, 8–128 blocks).
+- **Tooltips on every config button** — Each toggle and slider in the ModMenu config screen now shows a short description on hover.
+
+---
+
+## [1.6.2]
+
+### Changed
+- **ModMenu config screen redesigned as tabbed UI** — the settings screen is now split into four clearly labelled tabs so all options are easy to find without scrolling:
+  - **General** — profile cycling, save custom profile, update checker, join optimizer, GUI optimizer, particle optimizer
+  - **Culling** — entity culling, block entity culling, occlusion culling, async occlusion, painting backface culling
+  - **LOD & Labels** — entity LOD toggle, nameplate culling toggle, medium/far LOD distance sliders, map frame throttle
+  - **Background FPS** — background FPS toggle, unfocused FPS cap slider, minimized FPS cap slider
+
+### Fixed
+- **Nameplate flicker caused by Entity LOD throttling** — The Entity LOD system skips rendering distant entities every 2nd or 3rd tick to reduce GPU load. Because `EntityRenderer.hasLabel()` is only called during an entity's render pass, a throttled frame also skipped the nameplate, causing it to flash on/off at the LOD rate. FPSFlow now exempts any entity that is within the configured nameplate culling distance from LOD throttling, so the label is always rendered when it should be visible.
+- **Redundant camera distance recalculation removed** — `EntityLabelMixin` previously re-computed the camera-to-entity squared distance instead of using the value already calculated and passed in by `EntityRenderer.hasLabel`. The mixin now uses the provided parameter directly, eliminating a redundant Vec3d allocation per label per frame.
+- **Hysteresis dead-band widened from 15 % to 20 %** — Entities hovering just outside the nameplate range now need to move further away before their label hides, giving an additional buffer against brief visibility changes near the boundary.
+- **Dead server-override bookkeeping removed** — `NameplateCullingManager` previously maintained a `SERVER_FORCED_VISIBILITY` map that was never populated (no mixin called `markServerForcedVisibility`). The map was always empty, so its checks were no-ops. The code has been removed; the active server-override protection (`isCustomNameVisible()` bypass) is unchanged.
+
+---
+
 ## [1.6.1]
 
 ### Added

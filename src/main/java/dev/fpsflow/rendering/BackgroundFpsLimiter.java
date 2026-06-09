@@ -8,7 +8,8 @@ import net.minecraft.client.MinecraftClient;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Reduces frame rate when the Minecraft window is unfocused or minimised.
+ * Reduces frame rate when the Minecraft window is unfocused, minimised, or on
+ * a non-game screen (loading screen, title screen, server list, etc.).
  * Inspired by Dynamic FPS: adds a sleep after each rendered frame so the
  * render loop naturally idles instead of spinning at full speed for no one.
  *
@@ -53,31 +54,46 @@ public final class BackgroundFpsLimiter implements OptimizationModule {
 
     /**
      * Called at the end of every rendered frame (from GameRendererMixin).
-     * When the window is unfocused or minimised, sleeps long enough to keep
-     * the effective frame rate at or below the configured cap.
+     * Applies an FPS cap based on the current window state:
+     *   - minimised → minimizedFpsCap
+     *   - unfocused  → unfocusedFpsCap
+     *   - focused on a non-game screen (loading, title, menus) → titleScreenFpsCap
+     *   - focused in-game → no cap
      */
     public void onFrameRendered() {
         if (!isEnabled()) return;
 
+        FPSFlowConfig.BackgroundFpsConfig cfg = ConfigManager.getInstance().getConfig().backgroundFps;
         long handle = MinecraftClient.getInstance().getWindow().getHandle();
         boolean focused = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_FOCUSED) == 1;
-        if (focused) {
-            lastFrameNanos = System.nanoTime();
+
+        if (!focused) {
+            boolean iconified = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_ICONIFIED) == 1;
+            applyFpsCap(iconified ? cfg.minimizedFpsCap : cfg.unfocusedFpsCap);
             return;
         }
 
-        boolean iconified = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_ICONIFIED) == 1;
-        FPSFlowConfig.BackgroundFpsConfig cfg = ConfigManager.getInstance().getConfig().backgroundFps;
-        int targetFps = iconified ? cfg.minimizedFpsCap : cfg.unfocusedFpsCap;
+        // When focused but not in a world, cap FPS to reduce GPU spinning during
+        // loading and title screens. This frees thermal/power headroom so loading
+        // threads finish faster without the GPU burning unnecessary cycles on
+        // rendering a static menu at thousands of FPS.
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (cfg.titleScreenFpsCap > 0 && client.player == null) {
+            applyFpsCap(cfg.titleScreenFpsCap);
+            return;
+        }
+
+        lastFrameNanos = System.nanoTime();
+    }
+
+    private void applyFpsCap(int targetFps) {
         if (targetFps <= 0) {
             lastFrameNanos = System.nanoTime();
             return;
         }
-
         long targetFrameNanos = 1_000_000_000L / targetFps;
         long now = System.nanoTime();
         long sleepNanos = targetFrameNanos - (now - lastFrameNanos);
-
         if (sleepNanos > 1_000_000L) {
             try {
                 Thread.sleep(sleepNanos / 1_000_000L, (int)(sleepNanos % 1_000_000L));
@@ -85,7 +101,6 @@ public final class BackgroundFpsLimiter implements OptimizationModule {
                 Thread.currentThread().interrupt();
             }
         }
-
         lastFrameNanos = System.nanoTime();
     }
 }
