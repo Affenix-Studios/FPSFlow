@@ -53,7 +53,7 @@ public final class EntityLODManager implements OptimizationModule {
     public boolean shouldThrottleRender(int entityId, double distSq) {
         if (!isEnabled()) return false;
         FPSFlowConfig.EntityLODConfig lod = ConfigManager.getInstance().getConfig().entityLOD;
-        // When FPS is low the LOD thresholds shrink so throttling kicks in earlier,
+        // When FPS is low the LOD threshold shrinks so throttling kicks in earlier,
         // reducing render load without requiring a manual profile change.
         double lodMult = AdaptiveRenderer.getInstance().getLODDistanceMultiplier();
         double farDist = lod.farLODDistance * lodMult;
