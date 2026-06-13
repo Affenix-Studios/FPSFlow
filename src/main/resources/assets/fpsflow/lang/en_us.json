@@ -60,6 +60,8 @@
   "fpsflow.config.update_checker.enabled": "Enable Update Checker",
   "fpsflow.config.update_checker.enabled.tooltip": "Check Modrinth for new FPSFlow versions on startup.",
 
+  "fpsflow.update.available": "A new version of FPSFlow is available: %s → %s (check Modrinth)",
+
   "fpsflow.config.entity_lod": "Entity LOD",
   "fpsflow.config.entity_lod.enabled": "Enable Entity LOD",
   "fpsflow.config.entity_lod.enabled.tooltip": "Throttle rendering of distant entities to every 2nd or 3rd tick to save GPU time.",
@@ -73,8 +75,6 @@
   "fpsflow.config.item_frame.enabled.tooltip": "Limit how often item frames with maps update their render state.",
   "fpsflow.config.item_frame.interval": "Map Update Interval (ticks)",
   "fpsflow.config.item_frame.interval.tooltip": "Map item frames refresh their texture once every N ticks. Higher = better performance.",
-
-  "fpsflow.update.available": "A new version of FPSFlow is available: %s → %s (check Modrinth)",
 
   "fpsflow.compat.entity_culling_detected": "EntityCulling mod detected – FPSFlow entity culling disabled to avoid conflicts.",
   "fpsflow.compat.immediately_fast_detected": "ImmediatelyFast detected – FPSFlow HUD caching deferred.",

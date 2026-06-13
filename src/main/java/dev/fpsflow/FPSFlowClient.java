@@ -5,6 +5,7 @@ import dev.fpsflow.updates.UpdateChecker;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
 @Environment(EnvType.CLIENT)
 public class FPSFlowClient implements ClientModInitializer {
@@ -13,6 +14,8 @@ public class FPSFlowClient implements ClientModInitializer {
     public void onInitializeClient() {
         SmartRenderScheduler.getInstance().initialize();
         UpdateChecker.getInstance().checkAsync();
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
+                UpdateChecker.getInstance().showPendingIfAny(client));
         FPSFlow.LOGGER.info("[FPSFlow] Client subsystems ready");
     }
 }

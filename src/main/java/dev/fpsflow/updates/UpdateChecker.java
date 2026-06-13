@@ -17,11 +17,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class UpdateChecker {
 
     private static final UpdateChecker INSTANCE = new UpdateChecker();
 
+    // loaders=["fabric"] percent-encoded — URI.create() rejects raw [ ] "
     private static final String API_URL =
             "https://api.modrinth.com/v2/project/fpsflow/version?loaders=%5B%22fabric%22%5D";
 
@@ -32,6 +34,7 @@ public final class UpdateChecker {
             .build();
 
     private UpdateResult lastResult = null;
+    private final AtomicReference<UpdateResult> pendingNotification = new AtomicReference<>(null);
 
     private UpdateChecker() {}
 
@@ -48,13 +51,36 @@ public final class UpdateChecker {
                     if (result.available()) {
                         FPSFlow.LOGGER.info("[FPSFlow] Update available: {} -> {}",
                                 result.currentVersion(), result.latestVersion());
-                        notifyPlayer(result);
+                        pendingNotification.set(result);
                     }
                 })
                 .exceptionally(ex -> {
                     FPSFlow.LOGGER.warn("[FPSFlow] Update check failed: {}", ex.getMessage());
                     return null;
                 });
+    }
+
+    // Called from ClientPlayConnectionEvents.JOIN — fires when the player enters a world,
+    // so mc.player is guaranteed non-null and the notification is never lost.
+    public void showPendingIfAny(MinecraftClient mc) {
+        UpdateResult pending = pendingNotification.getAndSet(null);
+        if (pending == null || !pending.available()) return;
+
+        new Thread(() -> {
+            try { Thread.sleep(3_000); } catch (InterruptedException ignored) {}
+            mc.execute(() -> {
+                if (mc.player != null) {
+                    mc.player.sendMessage(
+                            Text.literal("[FPSFlow] ")
+                                    .formatted(Formatting.AQUA)
+                                    .append(Text.translatable("fpsflow.update.available",
+                                            pending.currentVersion(), pending.latestVersion())
+                                            .formatted(Formatting.WHITE)),
+                            false
+                    );
+                }
+            });
+        }, "fpsflow-update-notify").start();
     }
 
     private UpdateResult fetchLatestVersion() {
@@ -82,7 +108,6 @@ public final class UpdateChecker {
                 return UpdateResult.upToDate(current);
             }
 
-            // First entry is the most recent featured version
             var latest = versions.get(0).getAsJsonObject();
             String latestVersion = latest.get("version_number").getAsString();
 
@@ -105,33 +130,12 @@ public final class UpdateChecker {
 
     private boolean isNewer(String latest, String current) {
         try {
-            SemanticVersion latestSem = SemanticVersion.parse(latest);
-            SemanticVersion currentSem = SemanticVersion.parse(current);
-            return latestSem.compareTo(currentSem) > 0;
+            net.fabricmc.loader.api.Version latestVer = SemanticVersion.parse(latest);
+            net.fabricmc.loader.api.Version currentVer = SemanticVersion.parse(current);
+            return latestVer.compareTo(currentVer) > 0;
         } catch (VersionParsingException e) {
             return !latest.equals(current);
         }
-    }
-
-    private void notifyPlayer(UpdateResult result) {
-        // Delay until the player is in-game
-        new Thread(() -> {
-            try {
-                Thread.sleep(10_000);
-            } catch (InterruptedException ignored) {}
-
-            MinecraftClient mc = MinecraftClient.getInstance();
-            if (mc.player != null) {
-                mc.execute(() -> mc.player.sendMessage(
-                        Text.literal("[FPSFlow] ")
-                                .formatted(Formatting.AQUA)
-                                .append(Text.translatable("fpsflow.update.available",
-                                        result.currentVersion(), result.latestVersion())
-                                        .formatted(Formatting.WHITE)),
-                        false
-                ));
-            }
-        }, "fpsflow-update-notify").start();
     }
 
     public UpdateResult getLastResult() {

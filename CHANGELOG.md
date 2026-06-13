@@ -1,10 +1,25 @@
 # Changelog
 ---
 
+## [1.7.10]
+
+### Fixed
+- **Crash in ParticleManagerMixin on servers with many entities** — Minecraft 1.21.11 changed the value type of the internal `particles` map from `Queue<Particle>` to an internal collection class (`class_11940`) that does not implement `Queue`. The `@Shadow` field declaration and the per-tick particle count loop now use a raw `Map` with an `instanceof Collection<?>` check, which is compatible with both the old and new type.
+
+---
+
+## [1.7.9]
+
+### Fixed
+- **Crash with Voxy / extreme camera clipping** — When an entity's eye position coincided exactly with the camera position, `normalize()` produced a NaN direction vector, causing Minecraft's DDA raycast to freeze or crash the render thread. `rayCast()` now returns `false` immediately when the squared distance between endpoints is below 1 × 10⁻⁶, and adds a secondary NaN guard after each passable-block step.
+
+---
+
 ## [1.7.8]
 
 ### Fixed
-- **Update checker never detected new releases** — The Modrinth API URL contained unencoded `[`, `]`, and `"` characters in the query string (`loaders=["fabric"]`). Java's `URI.create()` rejects these characters with an `IllegalArgumentException`, which was silently swallowed by the existing catch block. The URL now uses the percent-encoded form (`loaders=%5B%22fabric%22%5D`), so the HTTP request is built correctly and updates are reliably detected.
+- **Update checker never detected new releases** — The Modrinth API URL contained unencoded `[`, `]`, and `"` characters (`loaders=["fabric"]`). Java's `URI.create()` rejects these with an `IllegalArgumentException` that was silently swallowed, so the HTTP request never executed. The URL now uses percent-encoded form (`loaders=%5B%22fabric%22%5D`).
+- **Update notification could be missed on slow title screens** — The old implementation slept 10 seconds after the HTTP response, then checked `mc.player`. If the player hadn't joined a world yet, the notification was silently dropped. The notification is now stored and shown 3 seconds after the next world join via `ClientPlayConnectionEvents.JOIN`.
 
 ---
 

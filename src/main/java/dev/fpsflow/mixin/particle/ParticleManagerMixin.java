@@ -16,14 +16,17 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Collection;
 import java.util.Map;
-import java.util.Queue;
 import java.util.function.BiConsumer;
 
 @Mixin(ParticleManager.class)
 public abstract class ParticleManagerMixin {
 
-    @Shadow @Final private Map<ParticleTextureSheet, Queue<Particle>> particles;
+    // Raw type: Minecraft 1.21.11 changed the value type from Queue<Particle> to
+    // an internal collection class (class_11940) that is not a Queue.
+    @SuppressWarnings("rawtypes")
+    @Shadow @Final private Map particles;
 
     private static volatile long fpsflow$lastParticleErrorMs = 0L;
     // Cached once per tick; avoids reading smoothed FPS on every particle spawn attempt.
@@ -56,7 +59,9 @@ public abstract class ParticleManagerMixin {
         // Seed the cap from the real live-particle count so maxParticles applies to
         // total alive particles, not just new spawns within a single tick.
         int live = 0;
-        for (Queue<Particle> q : particles.values()) live += q.size();
+        for (Object v : ((Map<?, ?>) particles).values()) {
+            if (v instanceof Collection<?> c) live += c.size();
+        }
         ParticleOptimizer optimizer = ParticleOptimizer.getInstance();
         optimizer.setActiveParticleCount(live);
 

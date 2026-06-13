@@ -60,6 +60,8 @@
   "fpsflow.config.update_checker.enabled": "Update-Checker aktivieren",
   "fpsflow.config.update_checker.enabled.tooltip": "Prüft Modrinth beim Start auf neue FPSFlow-Versionen.",
 
+  "fpsflow.update.available": "Eine neue Version von FPSFlow ist verfügbar: %s → %s (auf Modrinth prüfen)",
+
   "fpsflow.config.entity_lod": "Entity-LOD",
   "fpsflow.config.entity_lod.enabled": "Entity-LOD aktivieren",
   "fpsflow.config.entity_lod.enabled.tooltip": "Drosselt das Rendern entfernter Entities auf jeden 2. oder 3. Tick, um GPU-Zeit zu sparen.",
@@ -73,8 +75,6 @@
   "fpsflow.config.item_frame.enabled.tooltip": "Begrenzt wie oft Item-Rahmen mit Karten ihren Renderstatus aktualisieren.",
   "fpsflow.config.item_frame.interval": "Karten-Aktualisierungsintervall (Ticks)",
   "fpsflow.config.item_frame.interval.tooltip": "Karten-Item-Rahmen aktualisieren ihre Textur nur einmal alle N Ticks. Höher = bessere Leistung.",
-
-  "fpsflow.update.available": "Eine neue Version von FPSFlow ist verfügbar: %s → %s (auf Modrinth prüfen)",
 
   "fpsflow.compat.entity_culling_detected": "EntityCulling-Mod erkannt – FPSFlow-Entity-Culling deaktiviert, um Konflikte zu vermeiden.",
   "fpsflow.compat.immediately_fast_detected": "ImmediatelyFast erkannt – FPSFlow-HUD-Caching zurückgestellt.",
