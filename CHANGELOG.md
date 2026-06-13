@@ -1,6 +1,20 @@
 # Changelog
 ---
 
+## [1.7.8]
+
+### Fixed
+- **Update checker never detected new releases** — The Modrinth API URL contained unencoded `[`, `]`, and `"` characters in the query string (`loaders=["fabric"]`). Java's `URI.create()` rejects these characters with an `IllegalArgumentException`, which was silently swallowed by the existing catch block. The URL now uses the percent-encoded form (`loaders=%5B%22fabric%22%5D`), so the HTTP request is built correctly and updates are reliably detected.
+
+---
+
+## [1.7.7]
+
+### Fixed
+- **Crash when occlusion ray and entity eye position coincide** — If a camera and an entity eye position were at the same point (degenerate geometry, e.g. some Voxy LOD entities or extreme camera clipping), `to.subtract(origin).normalize()` produced a NaN direction vector. Minecraft's DDA raycast then diverged into undefined behaviour, freezing or crashing the render thread. `rayCast()` now short-circuits immediately when the squared distance between endpoints is below 1 × 10⁻⁶, and adds a secondary NaN guard after each passable-block step.
+
+---
+
 ## [1.7.6]
 
 ### Fixed

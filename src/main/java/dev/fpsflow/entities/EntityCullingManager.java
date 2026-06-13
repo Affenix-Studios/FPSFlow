@@ -190,6 +190,10 @@ public final class EntityCullingManager implements OptimizationModule {
     }
 
     private boolean rayCast(Vec3d from, Vec3d to, MinecraftClient mc) {
+        // Guard: if origin and target are at the same point the direction vector would
+        // be zero-length and normalize() would return NaN, freezing the DDA traversal.
+        if (from.squaredDistanceTo(to) < 1e-6) return false;
+
         Vec3d origin = from;
         // Retry up to 4 times, stepping past visually-invisible blocks (barrier, light,
         // structure void) that would wrongly count as occlusion.
@@ -205,9 +209,9 @@ public final class EntityCullingManager implements OptimizationModule {
 
             net.minecraft.block.BlockState hit = mc.world.getBlockState(result.getBlockPos());
             if (isVisuallyPassable(hit)) {
-                // Step slightly past this block and retry so visually-invisible blocks
-                // (barrier, light, structure void) are treated as transparent.
                 Vec3d dir = to.subtract(origin).normalize();
+                // Safety: if the step produced NaN (degenerate geometry), abort.
+                if (Double.isNaN(dir.x)) return false;
                 origin = result.getPos().add(dir.multiply(0.02));
                 continue;
             }

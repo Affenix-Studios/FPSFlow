@@ -23,7 +23,7 @@ public final class UpdateChecker {
     private static final UpdateChecker INSTANCE = new UpdateChecker();
 
     private static final String API_URL =
-            "https://api.modrinth.com/v2/project/fpsflow/version?loaders=[\"fabric\"]";
+            "https://api.modrinth.com/v2/project/fpsflow/version?loaders=%5B%22fabric%22%5D";
 
     private static final String USER_AGENT = "FPSFlow/" + FPSFlow.MOD_ID + " (update-checker)";
 
