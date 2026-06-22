@@ -79,11 +79,16 @@ tasks.jar {
     }
 }
 
+tasks.named<AbstractArchiveTask>("remapJar") {
+    archiveClassifier.set("intermediary")
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             artifactId = property("archives_base_name").toString()
-            from(components["java"])
+            artifact(tasks.named("jar"))
+            artifact(tasks.named("sourcesJar"))
         }
     }
 
