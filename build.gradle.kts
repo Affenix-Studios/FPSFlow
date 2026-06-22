@@ -80,7 +80,7 @@ tasks.jar {
 }
 
 tasks.named<AbstractArchiveTask>("remapJar") {
-    archiveClassifier.set("intermediary")
+    archiveClassifier.set("")
 }
 
 publishing {

@@ -3,6 +3,9 @@
 
 ## [1.7.12]
 
+### Changed
+- **Minecraft 1.21.11+ support** — The release now targets Minecraft 1.21.11 with matching Yarn mappings, Fabric Loader, and Fabric API dependency versions.
+
 ### Fixed
 - **Launch crash due to intermediary `net/minecraft/class_####` references** — The default release artifact now stays in the named runtime namespace expected by Minecraft 1.21.11, while Loom's intermediary remap is written as `fpsflow-<version>-intermediary.jar`. Maven publishing also uses the named `jar` artifact, preventing accidental uploads of a `class_####`-mapped build.
 
