@@ -1,6 +1,11 @@
 # Changelog
 ---
 
+## [1.7.13]
+
+### Fixed
+- Crash on launch on Minecraft 26.1.2 caused by lingering `net/minecraft/class_####` (intermediary) references in the release artifact mapping/remap pipeline.
+
 ## [1.7.12]
 
 ### Changed
