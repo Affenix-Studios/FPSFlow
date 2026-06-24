@@ -1,6 +1,23 @@
 # Changelog
 ---
 
+## [1.7.15]
+
+### Changed
+- **Dynamische Java-Version** — Das Build-System wählt automatisch:
+  - **Java 21** für Minecraft 1.21.11 (und ältere Versionen)
+  - **Java 25** für Minecraft 26.1+ (neue Versionen)
+
+### Fixed
+- **Crash auf Minecraft 26.1+ mit Java 25** — Die Mixin-Kompatibilität wird jetzt automatisch an die Minecraft-Version angepasst (`JAVA_21` → `JAVA_25`).
+- **Build-Fehler bei Versionsswitch** — `build.gradle.kts` erkennt jetzt die Minecraft-Version und setzt die korrekte Java-Version.
+
+### Notes
+- Mindestversion bleibt **Minecraft 1.21.11** (Java 21)
+- Für Minecraft 26.1+ wird automatisch **Java 25** verwendet
+
+---
+
 ## [1.7.14]
 
 ### Fixed

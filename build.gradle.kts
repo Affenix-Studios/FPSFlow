@@ -39,6 +39,7 @@ tasks.processResources {
     inputs.property("version", project.version)
     inputs.property("minecraft_version", minecraftVersion)
     inputs.property("loader_version", loaderVersion)
+    inputs.property("java_compatibility_level", if (targetJavaVersion == 25) "JAVA_25" else "JAVA_21")
 
     filteringCharset = "UTF-8"
 
@@ -51,9 +52,26 @@ tasks.processResources {
             )
         )
     }
+    
+    // Mixin-Kompatibilität dynamisch anpassen
+    filesMatching("fpsflow.mixins.json") {
+        expand(
+            mapOf(
+                "java_compatibility_level" to if (targetJavaVersion == 25) "JAVA_25" else "JAVA_21"
+            )
+        )
+    }
 }
 
-val targetJavaVersion = 21
+// Dynamische Java-Version basierend auf Minecraft-Version
+// Minecraft 1.21.11 → Java 21, Minecraft 26.1+ → Java 25
+val targetJavaVersion = if (minecraftVersion.startsWith("26") || minecraftVersion.startsWith("27")) {
+    25
+} else {
+    21
+}
+
+println("[FPSFlow] Building for Minecraft $minecraftVersion with Java $targetJavaVersion")
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"

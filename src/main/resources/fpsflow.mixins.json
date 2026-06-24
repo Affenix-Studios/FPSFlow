@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "dev.fpsflow.mixin",
-"compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "${java_compatibility_level}",
   "client": [
     "entity.EntityRenderManagerMixin",
     "entity.EntityLabelMixin",
