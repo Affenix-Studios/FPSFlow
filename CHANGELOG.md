@@ -1,10 +1,18 @@
 # Changelog
 ---
 
+## [1.7.14]
+
+### Fixed
+- Crash on launch on Minecraft 26.1.2 caused by lingering `net/minecraft/class_####` (intermediary) references in the release artifact mapping/remap pipeline.
+- Mixin loading is now fail-soft (`defaultRequire=0`) so missing/renamed targets from mapping drift no longer hard-crash the mod.
+- Updated mixin Java compatibility level to `JAVA_21` to match the project/toolchain.
+
 ## [1.7.13]
 
 ### Fixed
 - Crash on launch on Minecraft 26.1.2 caused by lingering `net/minecraft/class_####` (intermediary) references in the release artifact mapping/remap pipeline.
+
 
 ## [1.7.12]
 
