@@ -39,7 +39,6 @@ tasks.processResources {
     inputs.property("version", project.version)
     inputs.property("minecraft_version", minecraftVersion)
     inputs.property("loader_version", loaderVersion)
-    inputs.property("java_compatibility_level", if (targetJavaVersion == 25) "JAVA_25" else "JAVA_21")
 
     filteringCharset = "UTF-8"
 
@@ -53,14 +52,6 @@ tasks.processResources {
         )
     }
     
-    // Mixin-Kompatibilität dynamisch anpassen
-    filesMatching("fpsflow.mixins.json") {
-        expand(
-            mapOf(
-                "java_compatibility_level" to if (targetJavaVersion == 25) "JAVA_25" else "JAVA_21"
-            )
-        )
-    }
 }
 
 // Dynamische Java-Version basierend auf Minecraft-Version
