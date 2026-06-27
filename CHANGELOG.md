@@ -1,10 +1,21 @@
 # Changelog
 ---
 
+## [1.7.15]
+
+### Added
+- Multi-variant builds: Gradle can now output two separate artifacts so the same source can target **Minecraft 1.21.11 (Java 21)** and **Minecraft 26.1.2+ (Java 25)** with matching Yarn/mapping pipelines.
+
+### Fixed
+- Improve forward compatibility messaging: mixin target warnings (`@Mixin target ... was not found`) happen when a build is compiled for the wrong Minecraft/Yarn mapping set. The build system now helps prevent this mismatch by producing per-target outputs.
+
+---
+
 ## [1.7.14]
 
 ### Fixed
 - Crash on launch on Minecraft 26.1.2 caused by lingering `net/minecraft/class_####` (intermediary) references in the release artifact mapping/remap pipeline.
+
 - Mixin loading is now fail-soft (`defaultRequire=0`) so missing/renamed targets from mapping drift no longer hard-crash the mod.
 - Updated mixin Java compatibility level to `JAVA_21` to match the project/toolchain.
 
