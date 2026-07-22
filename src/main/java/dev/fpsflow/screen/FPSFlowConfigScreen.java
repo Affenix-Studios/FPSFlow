@@ -22,13 +22,13 @@ public class FPSFlowConfigScreen extends Screen {
     private static final int SPACING = 26;
 
     private enum Tab {
-        GENERAL("General"),
-        CULLING("Culling"),
-        LOD("LOD & Labels"),
-        BACKGROUND_FPS("Background FPS");
+        GENERAL("fpsflow.config.tab.general"),
+        CULLING("fpsflow.config.tab.culling"),
+        LOD("fpsflow.config.tab.lod_labels"),
+        BACKGROUND_FPS("fpsflow.config.tab.background_fps");
 
-        final String label;
-        Tab(String label) { this.label = label; }
+        final String labelKey;
+        Tab(String labelKey) { this.labelKey = labelKey; }
     }
 
     private final Screen parent;
@@ -48,9 +48,12 @@ public class FPSFlowConfigScreen extends Screen {
         int tabW = (width - 20) / tabs.length;
         for (int i = 0; i < tabs.length; i++) {
             Tab tab = tabs[i];
-            String label = (tab == currentTab ? "[ " : "") + tab.label + (tab == currentTab ? " ]" : "");
+            Text label = Text.translatable(tab.labelKey);
+            Text display = tab == currentTab
+                    ? Text.literal("[ ").append(label).append(Text.literal(" ]"))
+                    : label;
             int tx = 10 + i * tabW;
-            addDrawableChild(ButtonWidget.builder(Text.literal(label), btn -> {
+            addDrawableChild(ButtonWidget.builder(display, btn -> {
                 currentTab = tab;
                 clearAndInit();
             }).dimensions(tx, 8, tabW - 2, BTN_H).build());
@@ -79,126 +82,148 @@ public class FPSFlowConfigScreen extends Screen {
             cycleProfile();
             btn.setMessage(profileText());
         }).dimensions(cx - 100, y, 200, BTN_H)
-          .tooltip(Tooltip.of(Text.literal("Switch between built-in and custom performance profiles")))
+          .tooltip(Tooltip.of(Text.translatable("fpsflow.config.general.profile_cycle.tooltip")))
           .build());
         y += SPACING + 6;
 
-        addDrawableChild(ButtonWidget.builder(Text.literal("Save Custom Profile"), btn -> {
+        addDrawableChild(ButtonWidget.builder(Text.translatable("fpsflow.config.general.save_custom_profile"), btn -> {
             saveCurrentAsCustomProfile();
-            btn.setMessage(Text.literal("Saved as " + cfg.selectedProfile));
+            btn.setMessage(Text.translatable("fpsflow.config.general.saved_as", cfg.selectedProfile));
         }).dimensions(cx - 100, y, 200, BTN_H)
-          .tooltip(Tooltip.of(Text.literal("Save current settings as a new custom profile")))
+          .tooltip(Tooltip.of(Text.translatable("fpsflow.config.general.save_custom_profile.tooltip")))
           .build());
         y += SPACING + 6;
 
-        addDrawableChild(toggleBtn(lx, y, "Update Checker",
-                "Check Modrinth for FPSFlow updates on startup",
+        addDrawableChild(toggleBtn(lx, y,
+                Text.translatable("fpsflow.config.general.update_checker"),
+                Text.translatable("fpsflow.config.general.update_checker.tooltip"),
                 () -> cfg.updateChecker.enabled,
                 v -> cfg.updateChecker.enabled = v));
-        addDrawableChild(toggleBtn(rx, y, "Join Optimizer",
-                "Tighten culling for ~10 s after joining a world to reduce the initial FPS spike",
+        addDrawableChild(toggleBtn(rx, y,
+                Text.translatable("fpsflow.config.general.world_join_optimizer"),
+                Text.translatable("fpsflow.config.general.world_join_optimizer.tooltip"),
                 () -> cfg.worldJoinOptimizer.enabled,
                 v -> cfg.worldJoinOptimizer.enabled = v));
         y += SPACING;
 
-        addDrawableChild(toggleBtn(lx, y, "GUI Optimizer",
-                "Skip redundant hotbar and HUD redraws when nothing changed",
+        addDrawableChild(toggleBtn(lx, y,
+                Text.translatable("fpsflow.config.general.gui_optimizer"),
+                Text.translatable("fpsflow.config.general.gui_optimizer.tooltip"),
                 () -> cfg.guiOptimization.enabled,
                 v -> cfg.guiOptimization.enabled = v));
-        addDrawableChild(toggleBtn(rx, y, "Particle Optimizer",
-                "Cap particle count and thin out distant particles",
+        addDrawableChild(toggleBtn(rx, y,
+                Text.translatable("fpsflow.config.general.particle_optimizer"),
+                Text.translatable("fpsflow.config.general.particle_optimizer.tooltip"),
                 () -> cfg.particleOptimization.enabled,
                 v -> cfg.particleOptimization.enabled = v));
         y += SPACING;
 
-        addDrawableChild(toggleBtn(lx, y, "Singleplayer Boost",
-                "Apply extra-aggressive culling in singleplayer to free CPU for chunk generation",
+        addDrawableChild(toggleBtn(lx, y,
+                Text.translatable("fpsflow.config.general.singleplayer_boost"),
+                Text.translatable("fpsflow.config.general.singleplayer_boost.tooltip"),
                 () -> cfg.singleplayerOpt.enabled,
                 v -> cfg.singleplayerOpt.enabled = v));
     }
 
+
     private void initCullingTab(int lx, int rx, int y) {
-        addDrawableChild(toggleBtn(lx, y, "Entity Culling",
-                "Skip frustum, distance, and occlusion-hidden entities",
+        addDrawableChild(toggleBtn(lx, y,
+                Text.translatable("fpsflow.config.entity_culling"),
+                Text.translatable("fpsflow.config.entity_culling.enabled.tooltip"),
                 () -> cfg.entityCulling.enabled,
                 v -> cfg.entityCulling.enabled = v));
-        addDrawableChild(toggleBtn(rx, y, "Block Entity Culling",
-                "Skip distant chests, furnaces, signs, and banners",
+        addDrawableChild(toggleBtn(rx, y,
+                Text.translatable("fpsflow.config.block_entity_culling"),
+                Text.translatable("fpsflow.config.block_entity_culling.enabled.tooltip"),
                 () -> cfg.blockEntityCulling.enabled,
                 v -> cfg.blockEntityCulling.enabled = v));
         y += SPACING;
 
-        addDrawableChild(toggleBtn(lx, y, "Occlusion Culling",
-                "Raycast check: skip entities fully hidden behind solid blocks",
+        addDrawableChild(toggleBtn(lx, y,
+                Text.translatable("fpsflow.config.entity_culling.occlusion"),
+                Text.translatable("fpsflow.config.entity_culling.occlusion.tooltip"),
                 () -> cfg.entityCulling.occlusionCulling,
                 v -> cfg.entityCulling.occlusionCulling = v));
-        addDrawableChild(toggleBtn(rx, y, "Async Occlusion",
-                "Spread raycasts over multiple ticks to avoid frame spikes",
+        addDrawableChild(toggleBtn(rx, y,
+                Text.translatable("fpsflow.config.entity_culling.async_occlusion"),
+                Text.translatable("fpsflow.config.entity_culling.async_occlusion.tooltip"),
                 () -> cfg.entityCulling.asyncOcclusion,
                 v -> cfg.entityCulling.asyncOcclusion = v));
         y += SPACING;
 
-        addDrawableChild(toggleBtn(lx, y, "Painting Backface Cull",
-                "Skip paintings when the camera is behind them (they are never visible from behind)",
+        addDrawableChild(toggleBtn(lx, y,
+                Text.translatable("fpsflow.config.entity_culling.painting_backface_culling"),
+                Text.translatable("fpsflow.config.entity_culling.painting_backface_culling.tooltip"),
                 () -> cfg.entityCulling.paintingBackfaceCulling,
                 v -> cfg.entityCulling.paintingBackfaceCulling = v));
     }
 
     private void initLODTab(int lx, int rx, int y) {
-        addDrawableChild(toggleBtn(lx, y, "Entity LOD",
-                "Entities beyond the LOD distance render every 2nd tick instead of every frame — nearly invisible at that range",
+        addDrawableChild(toggleBtn(lx, y,
+                Text.translatable("fpsflow.config.entity_lod"),
+                Text.translatable("fpsflow.config.entity_lod.enabled.tooltip"),
                 () -> cfg.entityLOD.enabled,
                 v -> cfg.entityLOD.enabled = v));
-        addDrawableChild(toggleBtn(rx, y, "Nameplate Culling",
-                "Hide name tags beyond the configured distance",
+        addDrawableChild(toggleBtn(rx, y,
+                Text.translatable("fpsflow.config.nameplate_culling"),
+                Text.translatable("fpsflow.config.nameplate_culling.enabled.tooltip"),
                 () -> cfg.nameplateCulling.enabled,
                 v -> cfg.nameplateCulling.enabled = v));
         y += SPACING;
 
-        addDrawableChild(createSlider(lx, y, "LOD distance",
-                "Entities beyond this distance (blocks) render every 2nd tick — at this range detail is not visible anyway",
+
+        addDrawableChild(createSlider(lx, y,
+                Text.translatable("fpsflow.config.entity_lod.medium_distance"),
+                Text.translatable("fpsflow.config.entity_lod.medium_distance.tooltip"),
                 () -> cfg.entityLOD.farLODDistance,
                 v -> cfg.entityLOD.farLODDistance = v,
                 16, 320));
         y += SPACING;
 
-        addDrawableChild(createSlider(lx, y, "Nameplate dist",
-                "Name tags are hidden beyond this distance (blocks)",
+        addDrawableChild(createSlider(lx, y,
+                Text.translatable("fpsflow.config.nameplate_culling.max_distance"),
+                Text.translatable("fpsflow.config.nameplate_culling.max_distance.tooltip"),
                 () -> cfg.nameplateCulling.maxDistance,
                 v -> cfg.nameplateCulling.maxDistance = v,
                 8, 128));
-        addDrawableChild(toggleBtn(rx, y, "Map Frame Throttle",
-                "Update map item frames only every few ticks instead of every frame",
+        addDrawableChild(toggleBtn(rx, y,
+                Text.translatable("fpsflow.config.item_frame"),
+                Text.translatable("fpsflow.config.item_frame.enabled.tooltip"),
                 () -> cfg.itemFrame.enabled,
                 v -> cfg.itemFrame.enabled = v));
     }
 
     private void initBackgroundFpsTab(int cx, int lx, int rx, int y) {
-        addDrawableChild(toggleBtn(cx - BTN_W / 2, y, "Background FPS Limit",
-                "Cap frame rate when the Minecraft window loses focus or is minimised",
+        addDrawableChild(toggleBtn(cx - BTN_W / 2, y,
+                Text.translatable("fpsflow.config.background_fps"),
+                Text.translatable("fpsflow.config.background_fps.enabled.tooltip"),
                 () -> cfg.backgroundFps.enabled,
                 v -> cfg.backgroundFps.enabled = v));
         y += SPACING + 6;
 
-        addDrawableChild(createFpsCapSlider(lx, y, "Unfocused FPS cap",
-                "FPS limit when the Minecraft window loses focus",
+
+        addDrawableChild(createFpsCapSlider(lx, y,
+                Text.translatable("fpsflow.config.background_fps.unfocused_cap"),
+                Text.translatable("fpsflow.config.background_fps.unfocused_cap.tooltip"),
                 () -> cfg.backgroundFps.unfocusedFpsCap,
                 v -> cfg.backgroundFps.unfocusedFpsCap = v));
-        addDrawableChild(createFpsCapSlider(rx, y, "Minimized FPS cap",
-                "FPS limit when the Minecraft window is minimised/iconified",
+        addDrawableChild(createFpsCapSlider(rx, y,
+                Text.translatable("fpsflow.config.background_fps.minimized_cap"),
+                Text.translatable("fpsflow.config.background_fps.minimized_cap.tooltip"),
                 () -> cfg.backgroundFps.minimizedFpsCap,
                 v -> cfg.backgroundFps.minimizedFpsCap = v));
         y += SPACING;
 
-        addDrawableChild(createFpsCapSlider(lx, y, "Menu/Load FPS cap",
-                "FPS limit during loading screens, title screen, and server menus — reduces GPU spinning so loading threads finish faster. 0 = no cap.",
+        addDrawableChild(createFpsCapSlider(lx, y,
+                Text.translatable("fpsflow.config.background_fps.menu_load_cap"),
+                Text.translatable("fpsflow.config.background_fps.menu_load_cap.tooltip"),
                 () -> cfg.backgroundFps.titleScreenFpsCap,
                 v -> cfg.backgroundFps.titleScreenFpsCap = v));
     }
 
     // ── helpers ────────────────────────────────────────────────────────────────
 
-    private ButtonWidget toggleBtn(int x, int y, String label, String description,
+    private ButtonWidget toggleBtn(int x, int y, Text label, Text description,
                                    BoolSupplier getter, BoolConsumer setter) {
         return ButtonWidget.builder(toggleText(label, getter.get()), btn -> {
             boolean next = !getter.get();
@@ -206,17 +231,20 @@ public class FPSFlowConfigScreen extends Screen {
             btn.setMessage(toggleText(label, next));
             ConfigManager.getInstance().save();
         }).dimensions(x, y, BTN_W, BTN_H)
-          .tooltip(Tooltip.of(Text.literal(description)))
+          .tooltip(Tooltip.of(description))
           .build();
     }
 
-    private static Text toggleText(String label, boolean on) {
-        return Text.literal(label + ": " + (on ? "ON" : "OFF"));
+    private static Text toggleText(Text label, boolean on) {
+        // Use ON/OFF as plain literals (simple, fast, and already consistent previously).
+        // This keeps behavior close to the previous UI.
+        return Text.literal(label.copy().append(": ").append(Text.literal(on ? "ON" : "OFF")).getString());
     }
+
 
     private Text profileText() {
         String selected = cfg.selectedProfile != null ? cfg.selectedProfile : PerformanceProfile.BALANCED.name();
-        return Text.literal("Profile: " + selected);
+        return Text.translatable("fpsflow.config.general.profile", selected);
     }
 
     private void cycleProfile() {
@@ -281,16 +309,16 @@ public class FPSFlowConfigScreen extends Screen {
         }
     }
 
-    private SliderWidget createSlider(int x, int y, String label, String description,
+    private SliderWidget createSlider(int x, int y, Text label, Text description,
                                       IntSupplier getter, IntConsumer setter,
                                       int min, int max) {
         double initialValue = (double)(getter.getAsInt() - min) / (max - min);
         SliderWidget slider = new SliderWidget(x, y, BTN_W, BTN_H,
-                Text.literal(label + ": " + getter.getAsInt()), initialValue) {
+                Text.literal(label.getString() + ": " + getter.getAsInt()), initialValue) {
             @Override
             protected void updateMessage() {
                 int value = min + (int) Math.round(this.value * (max - min));
-                setMessage(Text.literal(label + ": " + value));
+                setMessage(Text.literal(label.getString() + ": " + value));
             }
             @Override
             protected void applyValue() {
@@ -299,20 +327,21 @@ public class FPSFlowConfigScreen extends Screen {
                 ConfigManager.getInstance().save();
             }
         };
-        slider.setTooltip(Tooltip.of(Text.literal(description)));
+        slider.setTooltip(Tooltip.of(description));
         return slider;
     }
 
-    private SliderWidget createFpsCapSlider(int x, int y, String label, String description,
+
+    private SliderWidget createFpsCapSlider(int x, int y, Text label, Text description,
                                             IntSupplier getter, IntConsumer setter) {
         final int MAX_FPS = 480;
         double initial = (double) Math.max(0, getter.getAsInt()) / MAX_FPS;
         SliderWidget slider = new SliderWidget(x, y, BTN_W, BTN_H,
-                Text.literal(fpsCapLabel(label, getter.getAsInt())), initial) {
+                Text.literal(fpsCapLabel(label.getString(), getter.getAsInt())), initial) {
             @Override
             protected void updateMessage() {
                 int v = (int) Math.round(this.value * MAX_FPS);
-                setMessage(Text.literal(fpsCapLabel(label, v)));
+                setMessage(Text.literal(fpsCapLabel(label.getString(), v)));
             }
             @Override
             protected void applyValue() {
@@ -321,13 +350,14 @@ public class FPSFlowConfigScreen extends Screen {
                 ConfigManager.getInstance().save();
             }
         };
-        slider.setTooltip(Tooltip.of(Text.literal(description)));
+        slider.setTooltip(Tooltip.of(description));
         return slider;
     }
 
     private static String fpsCapLabel(String label, int fps) {
         return label + ": " + (fps <= 0 ? "Unlimited" : fps);
     }
+
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {

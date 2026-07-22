@@ -6,9 +6,9 @@ org.gradle.jvmargs=-Xmx2G -XX:MaxMetaspaceSize=512m
 # 1. minecraft_version (e.g. 1.22.0)
 # 2. loader_version (match the new version)
 # 3. fabric_version (match the new version)
-# Yarn mappings are required for Loom 1.17.3.
+# No Yarn/Mojang mappings version to search for — Loom resolves them from Mojang's official repo.
 minecraft_version=1.21.11
-yarn_mappings=1.21.11+build.1
+mappings_version=2024.11.18
 loader_version=0.19.3
 
 # Mod Properties
@@ -17,9 +17,8 @@ modmenu_version=17.0.0
 maven_group=dev.fpsflow
 archives_base_name=fpsflow
 
-# Default Java target for single builds.
-# Running `gradle clean build` will automatically build Java 21 and Java 25 variants.
-java_version=21
+# Java version to target (21, 25, or any future LTS)
+java_version=25
 
 # Dependencies
 fabric_version=0.141.4+1.21.11

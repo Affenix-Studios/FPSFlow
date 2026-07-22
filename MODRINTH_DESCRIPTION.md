@@ -23,18 +23,6 @@ FPSFlow is a client-side Fabric optimization mod that targets the biggest render
 
 ---
 
-## ✦ In-game Config Screen
-
-Install [ModMenu](https://modrinth.com/mod/modmenu) to get a settings screen directly in the mod list.
-
-- **Four tabs**: General · Culling · LOD & Labels · Background FPS
-- Every button has a **tooltip** explaining exactly what the setting does
-- Switch profiles, toggle features, adjust LOD distances and FPS caps — no JSON editing required
-- New in 1.7.0: **Nameplate distance slider**, **Singleplayer Boost toggle**, and **Menu/Load FPS cap slider** added
-- New in 1.7.11: item render throttles automatically pause during server resource-pack reloads — no more flickering items when joining texture-pack servers
-
----
-
 ## ✦ Performance Profiles
 
 One setting, four presets — changing the profile rewrites all other settings automatically.
@@ -83,15 +71,25 @@ FPSFlow detects installed mods at startup and automatically disables overlapping
 **Does FPSFlow conflict with Sodium, Lithium, or FerriteCore?**
 No. FPSFlow is designed to complement these mods — install all of them together.
 
-**Should I use FPSFlow's built-in entity culling or the EntityCulling mod?**
-Both work. When EntityCulling (tr7zw) is installed, FPSFlow automatically disables its own culling to avoid duplicate raycasts. EntityCulling uses more sophisticated occlusion; FPSFlow adds Entity LOD, nameplate culling, and all other features on top.
-
 **Can entities "pop in" with occlusion culling?**
 Rarely. The cache refreshes every 10 ticks (configurable). FPSFlow samples the entity's eye position for the raycast — naturally above the geometric centre, which avoids false-positives for small entities like floating heads and armor stands.
 
 **Does this work on servers?**
 FPSFlow is purely client-side — works with any server, no server installation required. Servers that send a custom resource pack are fully supported: FPSFlow detects the pack reload and pauses render throttles for ~3 seconds so item-frame maps and hotbar items always show the correct textures after the pack loads.
 
+---
+## ✦ Partner
+[![NexoMaker — Use code MCAFFE13 for 15% discount](https://nmchest.ams3.digitaloceanspaces.com/media/images/nm-banner.png)](https://nexomaker.com/?ref=MCAFFE13)
+
+### 🎨 Create Custom Minecraft Content with NexoMaker
+
+Create custom items, mobs, blocks, recipes, and more — **without coding**.  
+Compatible with **Nexo**, **ItemsAdder**, and other modern custom-content systems.
+
+💜 **Use code `MCAFFE13` to get 15% off!**
+👉 **[Get started with NexoMaker](https://nexomaker.com/?ref=MCAFFE13)**
+
+> ⚠️ **ItemsAdder or Nexo required for exported content.**
 ---
 
 ## ✦ Source & License

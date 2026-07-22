@@ -5,7 +5,7 @@
 [![Modrinth](https://img.shields.io/badge/Modrinth-fpsflow-1bd96a?logo=modrinth)](https://modrinth.com/mod/fpsflow)
 [![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-blue.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Fabric](https://img.shields.io/badge/Mod%20Loader-Fabric-747bff)](https://fabricmc.net/)
-[![Java 21](https://img.shields.io/badge/Java-21-orange)](https://adoptium.net/)
+[![Java 21+](https://img.shields.io/badge/Java-21%2B-orange)](https://adoptium.net/)
 
 Client-side Fabric optimization mod targeting the biggest rendering bottlenecks in vanilla Minecraft. Every feature is individually toggleable and adjusts automatically via four built-in performance profiles.
 
@@ -74,7 +74,19 @@ All settings are accessible via the ModMenu config screen (four tabs: **General 
   "minecraft:armor_stand": false
 }
 ```
+---
+## ✦ Partner
+[![NexoMaker — Use code MCAFFE13 for 15% discount](https://nmchest.ams3.digitaloceanspaces.com/media/images/nm-banner.png)](https://nexomaker.com/?ref=MCAFFE13)
 
+### 🎨 Create Custom Minecraft Content with NexoMaker
+
+Create custom items, mobs, blocks, recipes, and more — **without coding**.  
+Compatible with **Nexo**, **ItemsAdder**, and other modern custom-content systems.
+
+💜 **Use code `MCAFFE13` to get 15% off!**
+👉 **[Get started with NexoMaker](https://nexomaker.com/?ref=MCAFFE13)**
+
+> ⚠️ **ItemsAdder or Nexo required for exported content.**
 ---
 
 ## License

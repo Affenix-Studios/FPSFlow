@@ -1,6 +1,34 @@
 # Changelog
 ---
 
+## [1.8.0]
+
+### Changed
+- **Configurable Java target** — The Java version is no longer hardcoded in `build.gradle.kts`. It is now read from the `java_version` property in `gradle.properties` (default: `21`). Set `java_version=25` to build with Java 25. The Mixin compatibility level (`JAVA_21` / `JAVA_25`) and the `remapJar` classifier (`mc1.21.11-java21` / `mc1.21.11-java25`) are derived automatically from this value — nothing is hardcoded.
+- **Removed broken Java 21 / Java 25 multi-target build** — The previous `targetJavaVersion` switch that attempted to produce separate artifacts for different Minecraft generations never functioned correctly. The build now uses a single, configurable Java version.
+- **Removed Java 25 properties from `gradle.properties`** — The `minecraft_version_java25`, `yarn_mappings_java25`, `loader_version_java25`, `fabric_version_java25`, and `modmenu_version_java25` properties have been removed. All builds now use the single set of Fabric properties.
+- **Simplified `build.gradle.kts`** — Dead code removed, all comments translated to English, ModMenu removed from compile-time dependencies. The integration class now uses a matching method signature that ModMenu calls via reflection, eliminating the compile-time dependency that caused build failures when ModMenu artifacts were unavailable.
+- **Fixed TerraformersMC Maven repository URL** — Changed from `https://terraformersmc.com` to `https://maven.terraformersmc.com` for correct dependency resolution.
+- **Improved `fabric.mod.json`** — Description updated to match the Modrinth page; `fabricloader` and `fabric-api` dependency minimums tightened to `>=0.19.3` and `>=0.141.4` respectively.
+- **Updated `how_to_build.md`** — Rewritten for the single configurable Java build path; references to the removed `buildJava21` / `buildJava25` tasks eliminated.
+- **Updated `settings.gradle.kts`** — Removed version lock for fabric-loom and simplified plugin repository configuration.
+- **Fabric API version corrected** — Changed from `0.19.3+26.2` (invalid) to `0.141.4+1.21.11` (correct for MC 1.21.11).
+- **Build verified with Java 25** — Successfully compiled and remapped `fpsflow-1.8.0-mc1.21.11-java25.jar`.
+- **Version migration guide** — Added `VERSION_MIGRATION.md` documenting short-term (Yarn) and long-term (Mojang mappings) strategies.
+
+### Fixed
+- **ModMenu integration was broken** — `FPSFlowModMenuIntegration.createConfigScreen()` returned `null`, causing a `NullPointerException` when a player clicked the Config button in ModMenu. The class now properly implements `ModMenuFactory` and returns a `FPSFlowConfigScreen` instance.
+- **Duplicate translation keys in `en_us.json` and `de_de.json`** — The `entity_lod` and `item_frame` key blocks were duplicated, with the first occurrence silently overwritten by the second. All duplicate blocks have been merged into single, complete entries.
+- **Missing translation keys** — Added `entity_culling.painting_backface_culling`, `entity_culling.painting_backface_culling.tooltip`, and `nameplate_culling.enabled.tooltip` to both language files. These keys were referenced by the config screen but had no translations, causing fallback to the raw key string.
+- **Dead variable in `settings.gradle.kts`** — The `mcVersion` variable was read from Gradle properties but never used in the `fabric-loom` resolution strategy. Removed.
+
+### Removed
+- **`i18n_pending_keys.txt` and `README_UI_KEYS.txt`** — These development artifacts tracked missing translation keys. All keys are now present in both language files, so these files are no longer needed.
+- **`gradlew` and `gradle/wrapper/`** — The Gradle wrapper is unnecessary when Gradle is installed system-wide. Users can build directly with `gradle build`.
+- **Yarn OFFICIAL mapping mode** — Temporarily removed; Loom 1.17.3 requires explicit Yarn mappings.
+
+---
+
 ## [1.7.15]
 
 ### Added
@@ -328,5 +356,3 @@
 - Entity occlusion culling is disabled automatically when the EntityCulling mod is detected
 - HUD caching is disabled automatically when ImmediatelyFast is detected
 - The adaptive renderer temporarily tightens particle and entity culling when FPS falls below 30 or 15
-
----

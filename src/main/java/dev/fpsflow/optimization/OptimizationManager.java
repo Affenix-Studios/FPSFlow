@@ -42,6 +42,8 @@ public final class OptimizationManager {
             try {
                 module.initialize();
                 FPSFlow.LOGGER.info("[FPSFlow] Module '{}' initialized", module.getId());
+            } catch (LinkageError e) {
+                FPSFlow.LOGGER.warn("[FPSFlow] Module '{}' could not initialize because a Minecraft class is missing or incompatible: {}", module.getId(), e.toString());
             } catch (Exception e) {
                 FPSFlow.LOGGER.error("[FPSFlow] Module '{}' failed to initialize", module.getId(), e);
             }
