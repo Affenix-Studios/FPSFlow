@@ -2,87 +2,93 @@
 
 ## Quick Start
 
+The project uses one shared source tree and switches between targets with the `build_target` property.
+
+### Build with Java 21
+
 ```bash
 gradle clean build
 ```
 
-The compiled JAR is placed in `build/libs/`:
+This uses the default target configuration from `gradle.properties` and builds with Java 21.
+
+### Build with Java 25
+
+```bash
+gradle clean build -Pbuild_target=modern
 ```
-build/libs/fpsflow-<version>-mc<minecraft_version>-java<java_version>.jar
+
+This uses the modern target configuration and builds with Java 25, but it is currently intended as a build/test target for newer Minecraft compatibility work rather than a fully verified runtime target.
+
+### Convenience tasks
+
+```bash
+gradle buildLegacy
+gradle buildModern
+gradle buildAllVariants
+```
+
+The compiled jars are placed under the target-specific build folders:
+
+```text
+build/legacy/
+build/modern/
 ```
 
 ## Prerequisites
 
-- **Java 21 or 25** (JDK) — configured via `java_version` in `gradle.properties`
-- **Gradle** (system-wide installation) — the `gradlew` wrapper is not included
+- Java 21 or Java 25 (JDK)
+- Gradle installed system-wide
+- The project does not include a Gradle wrapper (`gradlew`)
 
-## Current Configuration
+## Current Targets
 
-| Property | Value | Description |
-|----------|-------|-------------|
-| `minecraft_version` | 1.21.11 | Target Minecraft version |
-| `yarn_mappings` | 1.21.11+build.1 | Yarn mappings for this MC version |
-| `loader_version` | 0.19.3 | Fabric Loader version |
-| `fabric_version` | 0.141.4+1.21.11 | Fabric API version |
-| `java_version` | 25 | Java target (21 or 25) |
-| `mod_version` | 1.8 | Mod version |
+| Target | Minecraft | Mappings | Java | Output note |
+|--------|-----------|----------|------|-------------|
+| `legacy` | 1.21.11 | 1.21.11+build.1 | 21 | Verified build and runtime target |
+| `modern` | 26.2 | OFFICIAL | 25 | Build target for newer compatibility work; runtime compatibility is still incomplete |
 
-## Upgrading to a Newer Minecraft Version
+## Jar naming
 
-### Step 1: Update `gradle.properties`
+The output jar name includes the target and Java version, for example:
+
+```text
+fpsflow-1.8-mc1.21.11-java21.jar
+fpsflow-1.8-mc26.2-java25.jar
+```
+
+So you can keep both builds apart clearly.
+
+## Switching Targets
+
+You can switch targets either by editing `gradle.properties`:
 
 ```properties
-minecraft_version=<new_version>        # e.g. 1.22.0
-yarn_mappings=<yarn_version>           # e.g. 1.22.0+build.1
-loader_version=<loader_version>        # e.g. 0.20.0
-fabric_version=<fabric_version>        # e.g. 0.150.0+1.22.0
-java_version=25                        # Keep or adjust
+build_target=legacy
+# or
+build_target=modern
 ```
 
-### Step 2: Find the correct Yarn version
-
-Check available Yarn versions at:
-- https://maven.fabricmc.net/net/fabricmc/yarn/
-- https://github.com/FabricMC/yarn/releases
-
-### Step 3: Build and test
+or by passing the property on the command line:
 
 ```bash
-gradle clean build
+gradle clean build -Pbuild_target=modern
 ```
 
-## Version Independence Strategy
-
-**Short-term:** Yarn mappings (current, working)
-**Long-term:** Mojang mappings (once Loom > 1.17.3 is released)
-
-See `VERSION_MIGRATION.md` for detailed migration instructions.
-
-## Clean
+## Common Commands
 
 ```bash
 gradle clean
-```
-
-## IDE Setup
-
-Import the project as a Gradle project in your IDE (VS Code, IntelliJ IDEA, or Eclipse).
-
-## Publishing (Maven)
-
-```bash
-gradle publish
+gradle buildLegacy
+gradle buildModern
+gradle buildAllVariants
+gradle clean build -Pbuild_target=legacy
+gradle clean build -Pbuild_target=modern
 ```
 
 ## Troubleshooting
 
-| Error | Solution |
-|-------|----------|
-| `Configuration 'mappings' has no dependencies` | Loom 1.17.3 requires Yarn mappings. Set `yarn_mappings` to a valid version. |
-| `Could not find net.fabricmc:yarn:<version>` | The Yarn version doesn't exist. Check https://maven.fabricmc.net/net/fabricmc/yarn/ |
-| 502 Bad Gateway | TerraformersMC Maven is temporarily offline. Retry later. |
-| Java version mismatch | Set `java_version` to match your JDK (21 or 25). |
-
----
-
-*See `VERSION_MIGRATION.md` for the complete migration guide and future plans.*
+- If Gradle cannot resolve mappings, verify the selected target and the values in `build.gradle.kts`.
+- If the modern target fails, confirm that the chosen Minecraft/Fabric API versions are available from the configured repositories.
+- If the modern target starts but crashes at runtime, the issue is usually caused by missing or outdated mixin targets and Minecraft class mappings rather than the Java version itself.
+- If you use a different Java version, make sure it matches the selected target configuration.

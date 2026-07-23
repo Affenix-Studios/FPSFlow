@@ -1,5 +1,6 @@
 package dev.fpsflow.mixin.entity;
 
+import dev.fpsflow.compatibility.MinecraftVersionCompat;
 import dev.fpsflow.config.ConfigManager;
 import dev.fpsflow.config.FPSFlowConfig;
 import dev.fpsflow.entities.EntityLODManager;
@@ -15,10 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemFrameEntityRenderer.class)
 public abstract class ItemFrameEntityRendererMixin {
 
-    @Inject(method = "updateRenderState", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "updateRenderState", at = @At("HEAD"), cancellable = true, require = 0)
     private void fpsflow$throttleMapFrameUpdate(
             ItemFrameEntity entity, ItemFrameEntityRenderState state, float tickDelta,
             CallbackInfo ci) {
+        if (!MinecraftVersionCompat.isSupportedRuntime()) return;
         FPSFlowConfig.ItemFrameConfig cfg = ConfigManager.getInstance().getConfig().itemFrame;
         if (!cfg.enabled) return;
         // mapId is null until the first update runs — let that initial update through.

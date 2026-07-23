@@ -23,9 +23,6 @@
     ],
     "client": [
       "dev.fpsflow.FPSFlowClient"
-    ],
-    "modmenu": [
-      "dev.fpsflow.modmenu.FPSFlowModMenuIntegration"
     ]
   },
   "mixins": [

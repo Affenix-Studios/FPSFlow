@@ -1,6 +1,7 @@
 package dev.fpsflow.mixin.particle;
 
 import dev.fpsflow.FPSFlow;
+import dev.fpsflow.compatibility.MinecraftVersionCompat;
 import dev.fpsflow.particles.ParticleOptimizer;
 import dev.fpsflow.rendering.AdaptiveRenderer;
 import net.minecraft.client.particle.Particle;
@@ -35,7 +36,8 @@ public abstract class ParticleManagerMixin {
     @Inject(
         method = "addParticle(Lnet/minecraft/particle/ParticleEffect;DDDDDD)Lnet/minecraft/client/particle/Particle;",
         at = @At("HEAD"),
-        cancellable = true
+        cancellable = true,
+        require = 0
     )
     private <T extends ParticleEffect> void fpsflow$limitParticles(
             T parameters,
@@ -54,8 +56,10 @@ public abstract class ParticleManagerMixin {
         optimizer.incrementCount();
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "tick", at = @At("HEAD"), require = 0)
     private void fpsflow$onTickStart(CallbackInfo ci) {
+        if (!MinecraftVersionCompat.isSupportedRuntime()) return;
+
         // Seed the cap from the real live-particle count so maxParticles applies to
         // total alive particles, not just new spawns within a single tick.
         int live = 0;
@@ -76,7 +80,8 @@ public abstract class ParticleManagerMixin {
         at = @At(
             value = "INVOKE",
             target = "Ljava/util/Map;forEach(Ljava/util/function/BiConsumer;)V"
-        )
+        ),
+        require = 0
     )
     private <K, V> void fpsflow$safeParticleForEach(Map<K, V> map, BiConsumer<K, V> consumer) {
         map.forEach((k, v) -> {

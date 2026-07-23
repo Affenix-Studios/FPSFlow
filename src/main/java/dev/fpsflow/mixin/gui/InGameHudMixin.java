@@ -1,6 +1,7 @@
 package dev.fpsflow.mixin.gui;
 
 import dev.fpsflow.compatibility.CompatibilityChecker;
+import dev.fpsflow.compatibility.MinecraftVersionCompat;
 import dev.fpsflow.config.ConfigManager;
 import dev.fpsflow.gui.GUIOptimizer;
 import dev.fpsflow.gui.HUDCache;
@@ -25,7 +26,7 @@ public abstract class InGameHudMixin {
      * If ImmediatelyFast is present its own batching already handles draw-call
      * reduction, so we skip the hotbar hash check to avoid double-work.
      */
-    @Inject(method = "render", at = @At("HEAD"))
+    @Inject(method = "render", at = @At("HEAD"), require = 0)
     private void fpsflow$onRenderHead(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         if (!ConfigManager.getInstance().getConfig().guiOptimization.enabled) return;
         if (CompatibilityChecker.getInstance().isImmediatelyFastPresent()) return;
@@ -55,8 +56,9 @@ public abstract class InGameHudMixin {
      * This injection is used to keep HUDCache in sync with the player's state
      * every render frame so dirty checks are always accurate.
      */
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "render", at = @At("TAIL"), require = 0)
     private void fpsflow$onRenderTail(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        if (!MinecraftVersionCompat.isSupportedRuntime()) return;
         if (!ConfigManager.getInstance().getConfig().guiOptimization.enabled) return;
 
         MinecraftClient mc = MinecraftClient.getInstance();

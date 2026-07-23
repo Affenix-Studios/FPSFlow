@@ -1,17 +1,11 @@
 package dev.fpsflow.optimization;
 
-import dev.fpsflow.FPSFlow;
-import dev.fpsflow.blockentity.BlockEntityCullingManager;
-import dev.fpsflow.entities.EntityCullingManager;
-import dev.fpsflow.entities.EntityLODManager;
-import dev.fpsflow.gui.GUIOptimizer;
-import dev.fpsflow.join.WorldJoinOptimizer;
-import dev.fpsflow.particles.ParticleOptimizer;
-import dev.fpsflow.rendering.AdaptiveRenderer;
-import dev.fpsflow.rendering.BackgroundFpsLimiter;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+
+import dev.fpsflow.FPSFlow;
+
 
 public final class OptimizationManager {
 
@@ -26,17 +20,23 @@ public final class OptimizationManager {
         return INSTANCE;
     }
 
+    private static final String[] MODULE_CLASSES = {
+        "dev.fpsflow.join.WorldJoinOptimizer",
+        "dev.fpsflow.entities.EntityCullingManager",
+        "dev.fpsflow.entities.EntityLODManager",
+        "dev.fpsflow.blockentity.BlockEntityCullingManager",
+        "dev.fpsflow.particles.ParticleOptimizer",
+        "dev.fpsflow.gui.GUIOptimizer",
+        "dev.fpsflow.rendering.AdaptiveRenderer",
+        "dev.fpsflow.rendering.BackgroundFpsLimiter"
+    };
+
     public void initialize() {
         if (initialized) return;
 
-        register(WorldJoinOptimizer.getInstance());
-        register(EntityCullingManager.getInstance());
-        register(EntityLODManager.getInstance());
-        register(BlockEntityCullingManager.getInstance());
-        register(ParticleOptimizer.getInstance());
-        register(GUIOptimizer.getInstance());
-        register(AdaptiveRenderer.getInstance());
-        register(BackgroundFpsLimiter.getInstance());
+        for (String className : MODULE_CLASSES) {
+            registerSafely(className);
+        }
 
         for (OptimizationModule module : modules) {
             try {
@@ -50,6 +50,22 @@ public final class OptimizationManager {
         }
 
         initialized = true;
+    }
+
+    private void registerSafely(String className) {
+        try {
+            Class<?> clazz = Class.forName(className, true, getClass().getClassLoader());
+            Object instance = clazz.getMethod("getInstance").invoke(null);
+            if (instance instanceof OptimizationModule module) {
+                register(module);
+            } else {
+                FPSFlow.LOGGER.warn("[FPSFlow] Skipping optimization module because {} does not implement OptimizationModule", className);
+            }
+        } catch (LinkageError | ReflectiveOperationException e) {
+            FPSFlow.LOGGER.warn("[FPSFlow] Skipping optimization module {} because a Minecraft class is missing or incompatible: {}", className, e.toString());
+        } catch (Exception e) {
+            FPSFlow.LOGGER.error("[FPSFlow] Failed to create optimization module {}", className, e);
+        }
     }
 
     public void tick() {

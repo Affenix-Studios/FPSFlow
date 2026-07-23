@@ -1,5 +1,6 @@
 package dev.fpsflow.mixin.entity;
 
+import dev.fpsflow.compatibility.MinecraftVersionCompat;
 import dev.fpsflow.config.ConfigManager;
 import dev.fpsflow.entities.EntityCullingManager;
 import dev.fpsflow.entities.EntityLODManager;
@@ -22,7 +23,8 @@ public abstract class EntityRenderManagerMixin {
     @Inject(
         method = "shouldRender",
         at = @At("RETURN"),
-        cancellable = true
+        cancellable = true,
+        require = 0
     )
     private <E extends Entity> void fpsflow$cullEntity(
             E entity,
@@ -30,6 +32,7 @@ public abstract class EntityRenderManagerMixin {
             double cameraX, double cameraY, double cameraZ,
             CallbackInfoReturnable<Boolean> cir) {
 
+        if (!MinecraftVersionCompat.isSupportedRuntime()) return;
         if (!cir.getReturnValueZ()) return;
 
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();

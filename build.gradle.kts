@@ -1,20 +1,39 @@
 plugins {
-    id("fabric-loom") version "1.17.3"
+    id("fabric-loom") version "1.17.17"
     `maven-publish`
 }
 
 version = property("mod_version").toString()
 group = property("maven_group").toString()
 
-val minecraftVersion = property("minecraft_version").toString()
-val yarnMappings = project.findProperty("yarn_mappings")?.toString()
-    ?: project.findProperty("mappings_version")?.toString()
-    ?: "OFFICIAL"
-val loaderVersion = property("loader_version").toString()
-val fabricVersion = property("fabric_version").toString()
-val javaVersion = (project.findProperty("java_version")?.toString() ?: property("java_version").toString()).toInt()
+val buildTarget = (project.findProperty("build_target")?.toString()
+    ?: property("build_target").toString()).lowercase()
+val targetConfig = when (buildTarget) {
+    "modern" -> mapOf(
+        "name" to "modern",
+        "minecraft" to "1.21.11",
+        "yarn" to "1.21.11+build.1",
+        "loader" to "0.19.3",
+        "fabric" to "0.141.4+1.21.11",
+        "java" to 25
+    )
+    else -> mapOf(
+        "name" to "legacy",
+        "minecraft" to "1.21.11",
+        "yarn" to "1.21.11+build.1",
+        "loader" to "0.19.3",
+        "fabric" to "0.141.4+1.21.11",
+        "java" to 21
+    )
+}
 
-buildDir = file("build/java${javaVersion}")
+val minecraftVersion = targetConfig["minecraft"].toString()
+val yarnMappings = targetConfig["yarn"].toString()
+val loaderVersion = targetConfig["loader"].toString()
+val fabricVersion = targetConfig["fabric"].toString()
+val javaVersion = targetConfig["java"].toString().toInt()
+
+buildDir = file("build/${buildTarget}")
 
 base {
     archivesName.set(property("archives_base_name").toString())
@@ -35,7 +54,9 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:${minecraftVersion}")
 
-    if (yarnMappings != "OFFICIAL") {
+    if (yarnMappings == "OFFICIAL") {
+        mappings(loom.officialMojangMappings())
+    } else {
         mappings("net.fabricmc:yarn:${yarnMappings}:v2")
     }
 
@@ -47,6 +68,7 @@ tasks.processResources {
     inputs.property("version", project.version)
     inputs.property("minecraft_version", minecraftVersion)
     inputs.property("loader_version", loaderVersion)
+    inputs.property("fabric_version", fabricVersion)
     inputs.property("java_version", javaVersion)
 
     filteringCharset = "UTF-8"
@@ -56,7 +78,9 @@ tasks.processResources {
             mapOf(
                 "version" to project.version,
                 "minecraft_version" to minecraftVersion,
-                "loader_version" to loaderVersion
+                "loader_version" to loaderVersion,
+                "fabric_version" to fabricVersion,
+                "java_version" to javaVersion
             )
         )
     }
@@ -109,111 +133,53 @@ publishing {
 }
 
 // =====================================================================
-// Multi-Release Build: buildJava21, buildJava25, buildAll
+// Multi-Target Build: legacy and modern
 // =====================================================================
-// These tasks run a clean build for each Java version via a subprocess.
-// They use Gradle properties instead of editing gradle.properties directly.
-// Usage:
-//   gradle buildJava21       → builds only Java 21 JAR
-//   gradle buildJava25       → builds only Java 25 JAR
-//   gradle buildAll          → builds BOTH Java 21 + Java 25 JARs
-//   gradle clean build       → builds both variants automatically
+// The same source tree now builds either target by switching the
+// build_target property. No source duplication is required.
 // =====================================================================
 
 val gradleCmd = if (System.getProperty("os.name").lowercase().contains("win")) "gradle.bat" else "gradle"
-val projectDirRoot = rootProject.projectDir.absolutePath
-val runMatrixBuilds = project.findProperty("skipSubBuilds")?.toString()?.equals("true", ignoreCase = true) != true
 
-fun buildJarDir(javaVer: Int): File = File(projectDirRoot, "build/java${javaVer}/libs")
-
-fun registerJavaBuild(name: String, javaVer: Int): TaskProvider<Task> {
-    return tasks.register(name) {
-        group = "build"
-        description = "Build FPSFlow for Java ${javaVer}"
-
-        doLast {
-            println()
-            println("╔══════════════════════════════════════════════╗")
-            println("║  Building for Java ${javaVer}...                ║")
-            println("╚══════════════════════════════════════════════╝")
-            println()
-
-            val proc = ProcessBuilder(
-                gradleCmd,
-                "clean",
-                "build",
-                "--no-daemon",
-                "-Dorg.gradle.daemon=false",
-                "-Pjava_version=${javaVer}",
-                "-PskipSubBuilds=true"
-            )
-                .directory(rootProject.projectDir)
-                .inheritIO()
-                .start()
-            val exitCode = proc.waitFor()
-
-            if (exitCode != 0) {
-                throw GradleException("Java ${javaVer} build failed (exit code ${exitCode})")
-            }
-
-            val jarDir = buildJarDir(javaVer)
-            val javaJars = jarDir.listFiles { f -> f.name.contains("java${javaVer}") }
-            println()
-            println("✅ Java ${javaVer} Build successful!")
-            javaJars?.forEach { jar ->
-                val sizeKb = String.format("%.1f", jar.length() / 1024.0)
-                println("   📦 ${jar.name} (${sizeKb} KB)")
-            }
-        }
+fun runVariantBuild(target: String) {
+    val proc = ProcessBuilder(
+        gradleCmd,
+        "clean",
+        "build",
+        "--no-daemon",
+        "-Dorg.gradle.daemon=false",
+        "-Pbuild_target=${target}"
+    )
+        .directory(rootProject.projectDir)
+        .inheritIO()
+        .start()
+    val exitCode = proc.waitFor()
+    if (exitCode != 0) {
+        throw GradleException("Variant ${target} build failed (exit code ${exitCode})")
     }
 }
 
-val buildJava21 = registerJavaBuild("buildJava21", 21)
-val buildJava25 = registerJavaBuild("buildJava25", 25)
-
-fun copyBuiltJarsToBuildLibs(vararg srcDirs: File) {
-    val destDir = File(projectDirRoot, "build/libs")
-    destDir.mkdirs()
-    delete(fileTree(destDir).matching { include("fpsflow-*.jar") })
-    val jars = srcDirs.flatMap { dir -> dir.listFiles { f -> f.name.endsWith(".jar") }?.toList() ?: emptyList() }
-    copy {
-        from(jars)
-        into(destDir)
-    }
-}
-
-tasks.register("buildAll") {
+tasks.register("buildLegacy") {
     group = "build"
-    description = "Build FPSFlow for both Java 21 and Java 25"
-    dependsOn(buildJava21, buildJava25)
-
-    doLast {
-        println()
-        println("╔══════════════════════════════════════════════╗")
-        println("║  All builds completed successfully!         ║")
-        println("╚══════════════════════════════════════════════╝")
-        println()
-
-        val java21Dir = buildJarDir(21)
-        val java25Dir = buildJarDir(25)
-        copyBuiltJarsToBuildLibs(java21Dir, java25Dir)
-
-        listOf(java21Dir, java25Dir).forEach { jarDir ->
-            jarDir.listFiles { f -> f.name.endsWith(".jar") }?.sorted()?.forEach { jar ->
-                val sizeKb = String.format("%.1f", jar.length() / 1024.0)
-                println("   📦 ${jar.name} (${sizeKb} KB)")
-            }
-        }
-    }
+    description = "Build FPSFlow for Minecraft 1.21.11"
+    doLast { runVariantBuild("legacy") }
 }
 
-if (runMatrixBuilds) {
-    tasks.named("build") {
-        dependsOn(buildJava21, buildJava25)
-        doLast {
-            val java25Dir = buildJarDir(25)
-            copyBuiltJarsToBuildLibs(java25Dir)
-        }
+tasks.register("buildModern") {
+    group = "build"
+    description = "Build FPSFlow for Minecraft 26.2"
+    doLast { runVariantBuild("modern") }
+}
+
+tasks.register("buildAllVariants") {
+    group = "build"
+    description = "Build both FPSFlow targets"
+    dependsOn("buildLegacy", "buildModern")
+}
+
+tasks.named("build") {
+    if (project.findProperty("build_target") == null) {
+        dependsOn("buildAllVariants")
     }
 }
 

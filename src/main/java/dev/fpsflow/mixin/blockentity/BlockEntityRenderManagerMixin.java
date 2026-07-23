@@ -1,6 +1,7 @@
 package dev.fpsflow.mixin.blockentity;
 
 import dev.fpsflow.blockentity.BlockEntityCullingManager;
+import dev.fpsflow.compatibility.MinecraftVersionCompat;
 import net.minecraft.client.render.block.entity.BlockEntityRenderManager;
 import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(BlockEntityRenderManager.class)
 public abstract class BlockEntityRenderManagerMixin {
 
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true, require = 0)
     private <S extends BlockEntityRenderState> void fpsflow$cullBlockEntity(
             S state,
             MatrixStack matrices,
@@ -22,6 +23,7 @@ public abstract class BlockEntityRenderManagerMixin {
             CameraRenderState cameraState,
             CallbackInfo ci) {
 
+        if (!MinecraftVersionCompat.isSupportedRuntime()) return;
         if (BlockEntityCullingManager.getInstance().shouldCull(state, cameraState)) {
             ci.cancel();
         }

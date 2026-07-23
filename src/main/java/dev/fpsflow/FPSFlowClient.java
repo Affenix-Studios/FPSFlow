@@ -13,11 +13,25 @@ public class FPSFlowClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        SmartRenderScheduler.getInstance().initialize();
-        ResourcePackReloadTracker.register();
-        UpdateChecker.getInstance().checkAsync();
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
-                UpdateChecker.getInstance().showPendingIfAny(client));
+        try {
+            ResourcePackReloadTracker.register();
+        } catch (Throwable t) {
+            FPSFlow.LOGGER.warn("[FPSFlow] ResourcePackReloadTracker could not register", t);
+        }
+
+        try {
+            UpdateChecker.getInstance().checkAsync();
+        } catch (Throwable t) {
+            FPSFlow.LOGGER.warn("[FPSFlow] UpdateChecker could not start", t);
+        }
+
+        try {
+            ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
+                    UpdateChecker.getInstance().showPendingIfAny(client));
+        } catch (Throwable t) {
+            FPSFlow.LOGGER.warn("[FPSFlow] Join listener could not register", t);
+        }
+
         FPSFlow.LOGGER.info("[FPSFlow] Client subsystems ready");
     }
 }
