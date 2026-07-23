@@ -3,7 +3,7 @@
 > **Real FPS improvements — no placebo, no bloat.**
 
 [![Modrinth](https://img.shields.io/badge/Modrinth-fpsflow-1bd96a?logo=modrinth)](https://modrinth.com/mod/fpsflow)
-[![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-blue.svg)](https://opensource.org/licenses/MPL-2.0)
+[![License:  AGPL-3.0](https://github.com/Affenix-Studios/FPSFlow/blob/main/LICENSE)](https://github.com/Affenix-Studios/FPSFlow/blob/main/LICENSE)
 [![Fabric](https://img.shields.io/badge/Mod%20Loader-Fabric-747bff)](https://fabricmc.net/)
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-orange)](https://adoptium.net/)
 
@@ -91,4 +91,4 @@ Compatible with **Nexo**, **ItemsAdder**, and other modern custom-content system
 
 ## License
 
-[Mozilla Public License 2.0](LICENSE) — you are free to use, modify, and redistribute FPSFlow. Modifications to covered files must remain MPL-2.0.
+[GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE) — you are free to use, modify, and redistribute FPSFlow. If you run a modified version on a server, you must provide the source code to users.

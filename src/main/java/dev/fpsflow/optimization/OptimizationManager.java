@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import dev.fpsflow.FPSFlow;
+import dev.fpsflow.util.CompactSineTable;
 
 
 public final class OptimizationManager {

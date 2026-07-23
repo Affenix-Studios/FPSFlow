@@ -1,6 +1,25 @@
 # Changelog
 ---
 
+## [1.8.1]
+
+### Added
+- **Lithium-inspired performance optimizations** — FPSFlow 1.8.1 integrates several key optimization techniques adapted from CaffeineMC's excellent [Lithium](https://github.com/CaffeineMC/lithium) mod, reimplemented from scratch to respect Lithium's license and ensure full compatibility with the FPSFlow codebase:
+  - **Compact Sine Table** (`CompactSineTable.java`) — A memory-efficient sine LUT that reduces table size from 256 KB to 64 KB using trigonometric identities (sin(-x) = -sin(x), sin(x) = sin(π/2 - x)). Reduces CPU cache pressure during rotation-heavy rendering while maintaining bit-for-bit compatibility with Minecraft's MathHelper.
+  - **Direction Constants Caching** (`DirectionValuesMixin.java`, `FastDirection.java`) — Prevents repeated defensive array copies from `Direction.values()` in hot code paths by providing cached references. Every call to `Enum.values()` in Java creates a new array allocation; this optimization eliminates that overhead in frequently-called redstone, block update, and entity collision code.
+  - **Fast BlockPos Utilities** (`FastBlockPos.java`) — Thread-local mutable BlockPos for iteration contexts plus efficient long-packing for hash-based collections, reducing GC pressure in chunk scanning and neighbor-iteration hot loops.
+  - **Collection Helper** (`FastCollectionHelper.java`) — Pre-sized HashMap/HashSet factories with optimal initial capacities, identity-based sets for entity classification, and utility methods that avoid the common allocation pitfalls found in vanilla's collection usage.
+- **Full Lithium attribution** — All adapted code paths include Javadoc `@see` references and `Inspired by` comments linking to the upstream Lithium repository.
+
+### Changed
+- **Version bumped to 1.8.1** — Gradle property `mod_version` updated from `1.8` to `1.8.1`.
+- **OptimizationManager module list extended** — New lightweight utility modules are registered on startup (no tick overhead, no Minecraft class dependencies).
+
+### Fixed
+- None.
+
+---
+
 ## [1.8.0]
 
 ### Changed
