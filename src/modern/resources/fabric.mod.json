@@ -3,7 +3,7 @@
   "id": "fpsflow",
   "version": "${version}",
   "name": "FPSFlow",
-  "description": "Real FPS improvements — no placebo, no bloat. Smart rendering, entity culling, adaptive optimizations, and configurable performance profiles.",
+  "description": "Real FPS improvements - no placebo, no bloat. Minecraft 26.2 compatibility build.",
   "authors": [
     {
       "name": "FPSFlow Contributors"
@@ -28,9 +28,6 @@
       "dev.fpsflow.modmenu.FPSFlowModMenuIntegration"
     ]
   },
-  "mixins": [
-    "fpsflow.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric-api": ">=${fabric_version}",
@@ -38,9 +35,6 @@
     "java": ">=${java_version}"
   },
   "suggests": {
-    "modmenu": "*",
-    "sodium": "*",
-    "lithium": "*",
-    "ferritecore": "*"
+    "modmenu": ">=${modmenu_version}"
   }
 }

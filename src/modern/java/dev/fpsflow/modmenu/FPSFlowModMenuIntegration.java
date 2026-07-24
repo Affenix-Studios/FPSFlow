@@ -4,18 +4,11 @@ import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 
 import dev.fpsflow.screen.FPSFlowConfigScreen;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
-/**
- * ModMenu integration entry point.
- *
- * <p>This class implements the {@link ModMenuApi} interface to provide
- * the FPSFlow config screen to ModMenu.</p>
- */
 public class FPSFlowModMenuIntegration implements ModMenuApi {
-
     @Override
     public ConfigScreenFactory<Screen> getModConfigScreenFactory() {
-        return parent -> new FPSFlowConfigScreen(parent);
+        return FPSFlowConfigScreen::new;
     }
 }

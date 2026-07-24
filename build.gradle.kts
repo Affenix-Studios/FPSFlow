@@ -11,11 +11,12 @@ val buildTarget = (project.findProperty("build_target")?.toString()
 val targetConfig = when (buildTarget) {
     "modern" -> mapOf(
         "name" to "modern",
-        "minecraft" to "1.21.11",
-        "yarn" to "1.21.11+build.1",
+        "minecraft" to "26.2",
+        "yarn" to "LOCAL",
         "loader" to "0.19.3",
-        "fabric" to "0.141.4+1.21.11",
-        "java" to 25
+        "fabric" to "0.155.2+26.2",
+        "java" to 25,
+        "modmenu" to "20.0.1"
     )
     else -> mapOf(
         "name" to "legacy",
@@ -23,7 +24,8 @@ val targetConfig = when (buildTarget) {
         "yarn" to "1.21.11+build.1",
         "loader" to "0.19.3",
         "fabric" to "0.141.4+1.21.11",
-        "java" to 21
+        "java" to 21,
+        "modmenu" to "17.0.1-beta.1"
     )
 }
 
@@ -32,8 +34,9 @@ val yarnMappings = targetConfig["yarn"].toString()
 val loaderVersion = targetConfig["loader"].toString()
 val fabricVersion = targetConfig["fabric"].toString()
 val javaVersion = targetConfig["java"].toString().toInt()
+val modMenuVersion = targetConfig["modmenu"].toString()
 
-buildDir = file("build/${buildTarget}")
+layout.buildDirectory.set(file("build/${buildTarget}"))
 
 base {
     archivesName.set(property("archives_base_name").toString())
@@ -49,19 +52,59 @@ repositories {
         name = "TerraformersMC"
         url = uri("https://maven.terraformersmc.com")
     }
+    maven {
+        name = "ModMenu"
+        url = uri("https://maven.terraformersmc.com/releases/")
+    }
 }
 
 dependencies {
     minecraft("com.mojang:minecraft:${minecraftVersion}")
 
-    if (yarnMappings == "OFFICIAL") {
+    if (yarnMappings == "NONE") {
+        // Minecraft 26.x ships with readable Mojang names. No Yarn mapping artifact exists.
+    } else if (yarnMappings == "LOCAL") {
+        mappings(files("tmp_yarn/yarn.jar"))
+    } else if (yarnMappings == "OFFICIAL") {
         mappings(loom.officialMojangMappings())
     } else {
         mappings("net.fabricmc:yarn:${yarnMappings}:v2")
     }
 
     modImplementation("net.fabricmc:fabric-loader:${loaderVersion}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricVersion}")
+    if (minecraftVersion.startsWith("26.")) {
+        implementation("net.fabricmc.fabric-api:fabric-api:${fabricVersion}")
+        implementation("com.terraformersmc:modmenu:${modMenuVersion}")
+    } else {
+        modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricVersion}")
+        modImplementation("com.terraformersmc:modmenu:${modMenuVersion}")
+    }
+}
+
+sourceSets {
+    main {
+        java.setSrcDirs(
+            if (minecraftVersion.startsWith("26.")) {
+                listOf("src/modern/java")
+            } else {
+                listOf("src/main/java")
+            }
+        )
+        resources.setSrcDirs(
+            if (minecraftVersion.startsWith("26.")) {
+                listOf("src/modern/resources", "src/main/resources")
+            } else {
+                listOf("src/main/resources")
+            }
+        )
+    }
+}
+
+tasks.processResources {
+    if (minecraftVersion.startsWith("26.")) {
+        exclude("fpsflow.mixins.json")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
 }
 
 tasks.processResources {
@@ -70,6 +113,7 @@ tasks.processResources {
     inputs.property("loader_version", loaderVersion)
     inputs.property("fabric_version", fabricVersion)
     inputs.property("java_version", javaVersion)
+    inputs.property("modmenu_version", modMenuVersion)
 
     filteringCharset = "UTF-8"
 
@@ -80,7 +124,8 @@ tasks.processResources {
                 "minecraft_version" to minecraftVersion,
                 "loader_version" to loaderVersion,
                 "fabric_version" to fabricVersion,
-                "java_version" to javaVersion
+                "java_version" to javaVersion,
+                "modmenu_version" to modMenuVersion
             )
         )
     }
@@ -109,6 +154,7 @@ java {
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.jar {
@@ -161,13 +207,13 @@ fun runVariantBuild(target: String) {
 
 tasks.register("buildLegacy") {
     group = "build"
-    description = "Build FPSFlow for Minecraft 1.21.11"
+    description = "Build FPSFlow for Minecraft 1.21.11 on Java 21"
     doLast { runVariantBuild("legacy") }
 }
 
 tasks.register("buildModern") {
     group = "build"
-    description = "Build FPSFlow for Minecraft 26.2"
+    description = "Build FPSFlow for Minecraft 26.2 on Java 25"
     doLast { runVariantBuild("modern") }
 }
 
