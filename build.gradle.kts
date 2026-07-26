@@ -12,9 +12,11 @@ val targetConfig = when (buildTarget) {
     "modern" -> mapOf(
         "name" to "modern",
         "minecraft" to "26.2",
+        "minecraft_dep" to ">=26.1",
         "yarn" to "LOCAL",
         "loader" to "0.19.3",
         "fabric" to "0.155.2+26.2",
+        "fabric_dep" to ">=0.155.1",
         "java" to 25,
         "modmenu" to "20.0.1"
     )
@@ -30,9 +32,11 @@ val targetConfig = when (buildTarget) {
 }
 
 val minecraftVersion = targetConfig["minecraft"].toString()
+val minecraftDep = targetConfig.getOrDefault("minecraft_dep", minecraftVersion).toString()
 val yarnMappings = targetConfig["yarn"].toString()
 val loaderVersion = targetConfig["loader"].toString()
 val fabricVersion = targetConfig["fabric"].toString()
+val fabricDep = targetConfig.getOrDefault("fabric_dep", fabricVersion).toString()
 val javaVersion = targetConfig["java"].toString().toInt()
 val modMenuVersion = targetConfig["modmenu"].toString()
 
@@ -110,8 +114,10 @@ tasks.processResources {
 tasks.processResources {
     inputs.property("version", project.version)
     inputs.property("minecraft_version", minecraftVersion)
+    inputs.property("minecraft_dep", minecraftDep)
     inputs.property("loader_version", loaderVersion)
     inputs.property("fabric_version", fabricVersion)
+    inputs.property("fabric_dep", fabricDep)
     inputs.property("java_version", javaVersion)
     inputs.property("modmenu_version", modMenuVersion)
 
@@ -122,8 +128,10 @@ tasks.processResources {
             mapOf(
                 "version" to project.version,
                 "minecraft_version" to minecraftVersion,
+                "minecraft_dep" to minecraftDep,
                 "loader_version" to loaderVersion,
                 "fabric_version" to fabricVersion,
+                "fabric_dep" to fabricDep,
                 "java_version" to javaVersion,
                 "modmenu_version" to modMenuVersion
             )

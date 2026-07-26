@@ -1,6 +1,17 @@
 # Changelog
 ---
 
+## [1.8.2]
+
+### Changed
+- **Single modern build now supports both Minecraft 26.1.2 and 26.2** — The modern build target now uses a flexible dependency range (`>=26.1` for Minecraft, `>=0.155.1` for Fabric API) in `fabric.mod.json`. A single `gradle buildModern` produces one JAR that works on both Minecraft 26.1.2 and 26.2 without separate artifacts.
+- **Build system improvements** — Added `minecraft_dep` and `fabric_dep` properties to `build.gradle.kts`, keeping the compile-time dependency pinned to a specific version while declaring a wider runtime compatibility range in the mod metadata.
+
+### Fixed
+- **Mod rejected on Minecraft 26.1.2** — The previous hard dependency on `Minecraft >=26.2` prevented the mod from loading on 26.1.2. The runtime dependency is now `>=26.1`, accepting all 26.x releases.
+
+---
+
 ## [1.8.1]
 
 ### Added
