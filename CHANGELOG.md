@@ -1,6 +1,22 @@
 # Changelog
 ---
 
+## [1.8.4]
+
+### Fixed
+- **ModMenu settings screen now shows the full FPSFlow configuration again in modern builds** — The modern compatibility screen now exposes the same settings layout as the 1.21.11 build instead of opening an empty or placeholder page.
+
+### Changed
+- **Version bumped to 1.8.4** — Gradle property `mod_version` updated from `1.8.3` to `1.8.4`.
+
+## [1.8.3]
+
+### Fixed
+- **Particle optimization is no longer enabled by default in the Balanced profile** — The default profile now keeps particle limits off unless you enable them manually, so visible effects like fishing particles are not filtered out on a fresh install.
+
+### Changed
+- **Version bumped to 1.8.3** — Gradle property `mod_version` updated from `1.8.2` to `1.8.3`.
+
 ## [1.8.2]
 
 ### Changed

@@ -4,21 +4,29 @@
 
 The project uses one shared source tree and switches between targets with the `build_target` property.
 
-### Build with Java 21
+### Build both variants
 
 ```bash
-gradle clean build
+gradle buildAllVariants
 ```
 
-This uses the default target configuration from `gradle.properties` and builds with Java 21.
+This runs both target builds back to back and is the easiest way to produce the full set of jars.
 
-### Build with Java 25
+### Build with Java 21 only
+
+```bash
+gradle clean build -Pbuild_target=legacy
+```
+
+This builds only the legacy target with Java 21.
+
+### Build with Java 25 only
 
 ```bash
 gradle clean build -Pbuild_target=modern
 ```
 
-This uses the modern target configuration and builds with Java 25, but it is currently intended as a build/test target for newer Minecraft compatibility work rather than a fully verified runtime target.
+This builds only the modern target with Java 25, but it is currently intended as a build/test target for newer Minecraft compatibility work rather than a fully verified runtime target.
 
 ### Convenience tasks
 
@@ -34,6 +42,8 @@ The compiled jars are placed under the target-specific build folders:
 build/legacy/
 build/modern/
 ```
+
+If you run `gradle clean build` without `-Pbuild_target`, the build script automatically depends on `buildAllVariants` and produces both targets.
 
 ## Prerequisites
 
@@ -53,8 +63,8 @@ build/modern/
 The output jar name includes the target and Java version, for example:
 
 ```text
-fpsflow-1.8-mc1.21.11-java21.jar
-fpsflow-1.8-mc26.2-java25.jar
+fpsflow-1.8.3-mc1.21.11-java21.jar
+fpsflow-1.8.3-mc26.2-java25.jar
 ```
 
 So you can keep both builds apart clearly.
@@ -82,6 +92,7 @@ gradle clean
 gradle buildLegacy
 gradle buildModern
 gradle buildAllVariants
+gradle clean build
 gradle clean build -Pbuild_target=legacy
 gradle clean build -Pbuild_target=modern
 ```
