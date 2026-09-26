@@ -1,7 +1,7 @@
 # Changelog
 ---
 
-## [1.8.4]
+## [1.8.3]
 
 ### Fixed
 - **ModMenu settings screen now shows the full FPSFlow configuration again in modern builds** — The modern compatibility screen now exposes the same settings layout as the 1.21.11 build instead of opening an empty or placeholder page.
